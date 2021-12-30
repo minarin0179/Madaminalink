@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index,js"
   },
   "keywords": [],
-  "author": "",
+  "author": "minarin0179",
   "license": "ISC",
   "dependencies": {
     "discord.js": "^13.5.0",
