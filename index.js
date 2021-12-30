@@ -41,8 +41,6 @@ client.on('messageCreate', message => {
             });
         });
     }
-
-    // message.guild.channels.create('test');
 });
 
 
@@ -50,8 +48,29 @@ client.on('interactionCreate', async (interaction) => {
     if (!interaction.isCommand()) {
         return;
     }
-    if (interaction.commandName === 'ping') {
-        await interaction.reply('Pong！');
+    if (interaction.commandName === 'copy') {
+        await interaction.deferReply();
+        interaction.guild.channels.create('copy ' + interaction.channel.name, {
+            // カテゴリー設定
+            parent: interaction.channel.parent,
+            // 権限をコピー
+            permissionOverwrites: interaction.channel.permissionOverwrites.cache,
+        }).then((new_channel) => {
+            interaction.channel.messages.fetch({ before: interaction.id }).then(messages => {
+                (async () => {
+                    for await (const msg of messages.reverse()) {
+                        if (msg[1].content === '') continue;
+                        await new_channel.send(msg[1].content);
+                        if (msg[1].attachments.size > 0) {
+                            const files = await msg[1].attachments.map(attachment => attachment.url);
+                            await new_channel.send({ files });
+                        }
+                    }
+                    await interaction.followUp({ content: 'コピーは正常に完了しました', ephemeral: true });
+                    //await interaction.deleteReply();
+                })();
+            });
+        });
     }
 });
 
