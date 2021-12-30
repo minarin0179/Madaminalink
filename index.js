@@ -7,14 +7,14 @@ const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_
 
 client.once('ready', () => {
     const data = [{
-        name: 'ping',
-        description: 'ピンしたらポンするのが礼儀',
+        name: 'copy',
+        description: 'チャンネルをメッセージや添付ファイルを含めて複製します',
     }];
     client.application.commands.set(data, '926052259069059102');
     console.log('準備完了！');
 });
 
-client.on('message', message => {
+client.on('messageCreate', message => {
     // prefixのないメッセージやbotからのメッセージは無視
     if (!message.content.startsWith(prefix) || message.author.bot) return;
 
@@ -27,19 +27,24 @@ client.on('message', message => {
     else if (command === 'copy') {
         message.guild.channels.create('copy ' + message.channel.name, { parent: message.channel.parent }).then((new_channel) => {
             message.channel.messages.fetch({ before: message.id }).then(messages => {
-                messages.reverse().forEach(msg => {
-                    if (msg.attachments.size > 0) {
-                        const files = msg.attachments.map(attachment => attachment.url);
-                        new_channel.send({ files });
+                (async () => {
+                    for await (const msg of messages.reverse()) {
+                        await new_channel.send(msg[1].content);
+                        console.log(msg[1].content);
+                        if (msg[1].attachments.size > 0) {
+                            const files = await msg[1].attachments.map(attachment => attachment.url);
+                            await new_channel.send({ files });
+                            console.log(msg[1].attachments);
+                        }
                     }
-                    new_channel.send(msg.content);
-                });
+                })();
             });
         });
     }
 
     // message.guild.channels.create('test');
 });
+
 
 client.on('interactionCreate', async (interaction) => {
     if (!interaction.isCommand()) {
