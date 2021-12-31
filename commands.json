@@ -1,0 +1,10 @@
+{
+    name: "copy",
+    description: "チャンネルをメッセージや添付ファイルを含めて複製します",
+    Option: [{
+        type: "CHANNEL",
+        name: "Channel",
+        description: "コピーするチャンネル/カテゴリー",
+        required: true,
+    }
+}
