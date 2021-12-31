@@ -18,7 +18,7 @@ client.once('ready', () => {
         }],
     }, {
         name: 'dice',
-        description: 'ダイスを作成します(A d X)',
+        description: 'ダイスを作成します(?d?)',
         options: [{
             type: 'NUMBER',
             name: 'ダイスの数',
@@ -66,13 +66,27 @@ client.on('messageCreate', message => {
 
 client.on('interactionCreate', async (interaction) => {
 
+    await interaction.deferReply({ ephemeral: true });
+
     if (!interaction.isCommand() && !interaction.isButton()) {
         return;
     }
-    if (interaction.commandName === 'copy') {
-        // 応答時間が長くなる場合
-        await interaction.deferReply({ ephemeral: true });
 
+    if (interaction.customId === 'dicerole') {
+        await interaction.reply('Please waiting');
+        await interaction.channel.send('<@' + interaction.member.id + '> ' + DiceRole(interaction.component.label));
+        await interaction.deleteReply();
+        return;
+    }
+
+    // これ以降のコマンドは管理者専用
+    if (!interaction.member.permissions.has('ADMINISTRATOR')) {
+        await interaction.followUp('このコマンドを実行する権限がありません');
+        return;
+    }
+
+
+    if (interaction.commandName === 'copy') {
         const original = interaction.options.getChannel('target');
 
         if (original.type === 'GUILD_TEXT') {
@@ -103,7 +117,7 @@ client.on('interactionCreate', async (interaction) => {
             content: 'ボタンをクリックしてダイスロール!',
             components: [new Discord.MessageActionRow().addComponents(button)],
         });
-        interaction.reply({ content: '>ダイス勝負', ephemeral: true });
+        interaction.reply({ content: 'ダイスを作成しました', ephemeral: true });
     }
     if (interaction.commandName === 'played') {
 
@@ -117,12 +131,9 @@ client.on('interactionCreate', async (interaction) => {
             interaction.reply('ロールの移行が完了しました');
         });
     }
-
-    if (interaction.customId === 'dicerole') {
-        await interaction.reply('<@' + interaction.member.id + '> ' + DiceRole(interaction.component.label));
-    }
 });
 
+// ダイスロールを行う 入力 〇d〇
 const DiceRole = (str) => {
     const figure = str.replace(/ /g, '');
     const args = figure.split('d');
@@ -137,8 +148,10 @@ const DiceRole = (str) => {
     return figure + ' → [' + result + '] → ' + sum(result);
 };
 
+//配列の合計
 const sum = (args) => args.reduce(function (a, b) { return a + b; }, 0);
 
+//整数の乱数発生機
 const getRandomInt = (max) => {
     return Math.floor(Math.random() * max + 1);
 };
@@ -173,6 +186,5 @@ const copyChannel = (original, category) => {
         });
     });
 };
-
 
 client.login(token);
