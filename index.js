@@ -4,8 +4,7 @@ const Discord = require('discord.js');
 // configを読み込み
 const { prefix, token } = require('./config.json');
 // クライアントを作成
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
-
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS] });
 client.once('ready', () => {
     const commands = [{
         name: 'copy',
@@ -32,8 +31,23 @@ client.once('ready', () => {
             required: true,
         }],
 
+    },
+    {
+        name: 'played',
+        description: 'プレイヤーロールを観戦ロールに置換',
+        options: [{
+            type: 'ROLE',
+            name: 'before',
+            description: '置換前のロール',
+            required: true,
+        }, {
+            type: 'ROLE',
+            name: 'after',
+            description: '置換後のロール',
+            required: true,
+        }],
     }];
-    client.application.commands.set(commands, '926052259069059102');
+    client.application.commands.set(commands, '847518637933199420');
     console.log('準備完了！');
 });
 
@@ -62,7 +76,6 @@ client.on('interactionCreate', async (interaction) => {
         const original = interaction.options.getChannel('target');
 
         if (original.type === 'GUILD_TEXT') {
-            console.log(original);
             await copyChannel(original, original.parent).then(() => {
                 interaction.followUp({ content: 'コピーは正常に完了しました', ephemeral: true });
             }).catch(() => {
@@ -70,7 +83,6 @@ client.on('interactionCreate', async (interaction) => {
             });
         }
         else if (original.type === 'GUILD_CATEGORY') {
-            console.log(original.children);
             original.guild.channels.create('copy ' + original.name, {
                 type: 'GUILD_CATEGORY',
                 permissionOverwrites: original.permissionOverwrites.cache,
@@ -93,6 +105,18 @@ client.on('interactionCreate', async (interaction) => {
         });
         interaction.reply({ content: '>ダイス勝負', ephemeral: true });
     }
+    if (interaction.commandName === 'played') {
+
+        interaction.guild.members.fetch().then(() => {
+            console.log(interaction.options.getRole('before').members);
+            interaction.options.getRole('before').members.forEach(member => {
+                member.roles.remove(interaction.options.getRole('before'));
+                member.roles.add(interaction.options.getRole('after'));
+            });
+        }).then(() => {
+            interaction.reply('ロールの移行が完了しました');
+        });
+    }
 
     if (interaction.customId === 'dicerole') {
         await interaction.reply('<@' + interaction.member.id + '> ' + DiceRole(interaction.component.label));
@@ -101,7 +125,6 @@ client.on('interactionCreate', async (interaction) => {
 
 const DiceRole = (str) => {
     const figure = str.replace(/ /g, '');
-    console.log(figure);
     const args = figure.split('d');
 
     if (args[0] == 1) {
@@ -114,7 +137,7 @@ const DiceRole = (str) => {
     return figure + ' → [' + result + '] → ' + sum(result);
 };
 
-const sum = (args) => args.reduce(function(a, b) { return a + b; }, 0);
+const sum = (args) => args.reduce(function (a, b) { return a + b; }, 0);
 
 const getRandomInt = (max) => {
     return Math.floor(Math.random() * max + 1);
