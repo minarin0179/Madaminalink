@@ -5,16 +5,44 @@ const Discord = require('discord.js');
 const { prefix, token } = require('./config.json');
 // クライアントを作成
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS] });
-client.once('ready', () => {
+
+client.once('ready', async () => {
+    // コマンド一覧
     const commands = [{
         name: 'copy',
         description: 'チャンネルをメッセージや添付ファイルを含めて複製します',
         options: [{
             type: 'CHANNEL',
             channelTypes: ['GUILD_TEXT', 'GUILD_CATEGORY'],
-            name: 'target',
+            name: 'テキストチャンネルまたはカテゴリー',
             description: 'コピーするチャンネル/カテゴリー',
             required: true,
+        }],
+    }, {
+        name: 'copy_beta',
+        description: 'チャンネルをメッセージや添付ファイルを含めて複製します',
+        options: [{
+            type: 'SUB_COMMAND',
+            name: 'text_channel',
+            description: 'テキストチャンネルを複製',
+            options: [{
+                type: 'CHANNEL',
+                channelTypes: ['GUILD_TEXT'],
+                name: 'text_channel',
+                description: '複製するテキストチャンネル',
+                required: true,
+            }],
+        }, {
+            type: 'SUB_COMMAND',
+            name: 'category',
+            description: 'カテゴリーを複製',
+            options: [{
+                type: 'CHANNEL',
+                channelTypes: ['GUILD_CATEGORY'],
+                name: 'category',
+                description: '複製するカテゴリー',
+                required: true,
+            }],
         }],
     }, {
         name: 'dice',
@@ -31,8 +59,7 @@ client.once('ready', () => {
             required: true,
         }],
 
-    },
-    {
+    }, {
         name: 'played',
         description: 'プレイヤーロールを観戦ロールに置換',
         options: [{
@@ -46,8 +73,23 @@ client.once('ready', () => {
             description: '置換後のロール',
             required: true,
         }],
+    }, {
+        name: 'log',
+        description: 'カテゴリをログとして保存します',
+        options: [{
+            type: 'CHANNEL',
+            name: 'channel',
+            channelTypes: ['GUILD_CATEGORY'],
+            description: '保存するカテゴリ',
+            required: true,
+        }, {
+            type: 'ROLE',
+            name: 'spectator',
+            description: '観戦者ロール',
+        }],
     }];
-    client.application.commands.set(commands, '847518637933199420');
+    // スラッシュコマンドを登録
+    await client.application.commands.set(commands, '926052259069059102');
     console.log('準備完了！');
 });
 
@@ -55,9 +97,11 @@ client.on('messageCreate', message => {
     // prefixのないメッセージやbotからのメッセージは無視
     if (!message.content.startsWith(prefix) || message.author.bot) return;
 
+    // コマンド部分を取得
     const args = message.content.slice(prefix.length).trim().split(' ');
     const command = args.shift().toLowerCase();
 
+    // ダイスコマンドを処理
     if (command.split('d').length == 2) {
         message.channel.send('<@' + message.member.id + '> ' + DiceRole(command));
     }
@@ -65,17 +109,19 @@ client.on('messageCreate', message => {
 
 
 client.on('interactionCreate', async (interaction) => {
-
+    // 応答時間の制限を15分に
     await interaction.deferReply({ ephemeral: true });
 
+    // コマンドやボタン以外は無視
     if (!interaction.isCommand() && !interaction.isButton()) {
         return;
     }
 
+    // 全員実行可能なコマンド
     if (interaction.customId === 'dicerole') {
-        await interaction.reply('Please waiting');
-        await interaction.channel.send('<@' + interaction.member.id + '> ' + DiceRole(interaction.component.label));
-        await interaction.deleteReply();
+        await interaction.followUp('ダイスロールを実行中');
+        await interaction.channel.send('<@' + interaction.member.id + '> 🎲' + DiceRole(interaction.component.label));
+        await interaction.editReply('ダイスロールを完了!');
         return;
     }
 
@@ -85,15 +131,37 @@ client.on('interactionCreate', async (interaction) => {
         return;
     }
 
+    // copy_betaコマンドの処理
+    if (interaction.commandName === 'copy_beta') {
+        // テキストチャンネルを複製
+        if (interaction.options.getSubcommand() === 'text_channel') {
+            const original = interaction.options.getChannel('text_channel');
+            await copyChannel(original, original.parent).then(() => {
+                interaction.followUp({ content: 'コピーは正常に完了しました', ephemeral: true });
+            });
+        }
 
-    if (interaction.commandName === 'copy') {
-        const original = interaction.options.getChannel('target');
+        // カテゴリーを複製
+        else {
+            const original = interaction.options.getChannel('category');
+            const new_category = await original.guild.channels.create('copy ' + original.name, {
+                type: 'GUILD_CATEGORY',
+                permissionOverwrites: original.permissionOverwrites.cache,
+            });
 
+            for await (const channel of original.children) {
+                await copyChannel(channel[1], new_category);
+            }
+        }
+        await interaction.followUp({ content: 'コピーは正常に完了しました', ephemeral: true });
+    }
+
+    // copyコマンドを処理
+    else if (interaction.commandName === 'copy') {
+        const original = interaction.options.getChannel('テキストチャンネルまたはカテゴリー');
         if (original.type === 'GUILD_TEXT') {
             await copyChannel(original, original.parent).then(() => {
                 interaction.followUp({ content: 'コピーは正常に完了しました', ephemeral: true });
-            }).catch(() => {
-                interaction.followUp({ content: 'コピー中にエラーが発生しました\n処理を中断します', ephemeral: true });
             });
         }
         else if (original.type === 'GUILD_CATEGORY') {
@@ -108,28 +176,72 @@ client.on('interactionCreate', async (interaction) => {
             interaction.followUp({ content: 'コピーは正常に完了しました', ephemeral: true });
         }
     }
+
+    // diceコマンドを処理
     else if (interaction.commandName === 'dice') {
         const button = new Discord.MessageButton()
             .setCustomId('dicerole')
             .setStyle('PRIMARY')
             .setLabel(interaction.options.getNumber('ダイスの数') + '    d    ' + interaction.options.getNumber('ダイスの面数'));
         await interaction.channel.send({
-            content: 'ボタンをクリックしてダイスロール!',
+            content: 'ボタンをクリックしてダイスロール🎲!',
             components: [new Discord.MessageActionRow().addComponents(button)],
         });
-        interaction.reply({ content: 'ダイスを作成しました', ephemeral: true });
+        interaction.followUp({ content: 'ダイスを作成しました', ephemeral: true });
     }
-    if (interaction.commandName === 'played') {
-
+    else if (interaction.commandName === 'played') {
         interaction.guild.members.fetch().then(() => {
-            console.log(interaction.options.getRole('before').members);
             interaction.options.getRole('before').members.forEach(member => {
                 member.roles.remove(interaction.options.getRole('before'));
                 member.roles.add(interaction.options.getRole('after'));
             });
         }).then(() => {
-            interaction.reply('ロールの移行が完了しました');
+            interaction.followUp('ロールの移行が完了しました');
         });
+    }
+
+    // logコマンドを処理
+    else if (interaction.commandName === 'log') {
+        const ch = interaction.options.getChannel('channel');
+        if (ch.name.startsWith('(ログ)')) {
+            interaction.followUp('このチャンネルはすでにログ化されています');
+            return;
+        }
+
+        const today = new Date();
+        const month = today.getMonth() + 1;
+        const date = today.getDate();
+
+        await ch.setName('(ログ)' + month + '/' + date + ch.name);
+        // ch.setPosition((await interaction.guild.channels.fetch()).size);
+        /*
+        ch.permissionOverwrites.cache.forEach(perm => {
+            ch.permissionOverwrites.delete(perm.id);
+        });
+        */
+
+        const spectator = interaction.options.getRole('spectator');
+        const everyoneRole = interaction.guild.roles.everyone;
+
+        await ch.permissionOverwrites.set([
+            {
+                id: everyoneRole.id,
+                deny: ['VIEW_CHANNEL', 'SEND_MESSAGES'],
+            },
+        ]);
+
+        if (spectator != null) {
+            await ch.permissionOverwrites.create(spectator, {
+                VIEW_CHANNEL: true,
+                SEND_MESSAGES: false,
+            });
+        }
+
+        await ch.children.forEach(async (channel) => {
+            await channel.permissionOverwrites.set(ch.permissionOverwrites.cache);
+        });
+
+        await interaction.followUp('完了しました');
     }
 });
 
@@ -148,43 +260,44 @@ const DiceRole = (str) => {
     return figure + ' → [' + result + '] → ' + sum(result);
 };
 
-//配列の合計
+// 配列の合計
 const sum = (args) => args.reduce(function (a, b) { return a + b; }, 0);
 
-//整数の乱数発生機
+// 整数の乱数発生機
 const getRandomInt = (max) => {
     return Math.floor(Math.random() * max + 1);
 };
 
-// チャンネルを複製して内容をコピー
-const copyChannel = (original, category) => {
-    return new Promise((resolve, reject) => {
-        // チャンネルを作る
-        original.guild.channels.create('copy ' + original.name, {
+const copyChannel = async (original, category) => {
+    // テキストチャンネルじゃなかったら無視
+    if (original.type != 'GUILD_TEXT') return;
+
+    const name = (original.parent == category) ? 'copy ' + original.name : original.name;
+    const new_channel =
+        await original.guild.channels.create(name, {
             // カテゴリー設定
             parent: category,
             // 権限をコピー
             permissionOverwrites: original.permissionOverwrites.cache,
-        }).then((new_channel) => {
-            // メッセージをすべて取得
-            original.messages.fetch().then(async (messages) => {
-                try {
-                    for await (const msg of messages.reverse()) {
-                        if (msg[1].content === '') continue;
-                        await new_channel.send(msg[1].content);
-                        if (msg[1].attachments.size > 0) {
-                            const files = await msg[1].attachments.map(attachment => attachment.url);
-                            await new_channel.send({ files });
-                        }
-                    }
-                }
-                catch {
-                    reject();
-                }
-                resolve();
-            });
         });
-    });
+
+    await original.messages.fetch().then(async (messages) => {
+        for await (const message of messages.reverse()) {
+            const content = message[1].content;
+            const files = await message[1].attachments.map(attachment => attachment.url);
+            // if (content == '' && files.size == 0) continue;
+
+            if (content == '') {
+                await new_channel.send({ files }).catch(err => console.log(err));
+                continue;
+            }
+
+            await new_channel.send({
+                content: content,
+                files: files,
+            }).catch(err => console.log(err));
+        }
+    }).catch(err => console.log(err));
 };
 
 client.login(token);
