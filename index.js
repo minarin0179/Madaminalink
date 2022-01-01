@@ -86,6 +86,7 @@ client.once('ready', async () => {
             type: 'ROLE',
             name: 'spectator',
             description: '観戦者ロール',
+            required: true,
         }],
     }, {
         name: 'setup',
@@ -108,7 +109,7 @@ client.once('ready', async () => {
         }],
     }];
     // スラッシュコマンドを登録
-    await client.application.commands.set(commands, '926052259069059102');
+    await client.application.commands.set(commands);
     console.log('準備完了！');
 });
 
@@ -426,6 +427,7 @@ const getRandomInt = (max) => {
     return Math.floor(Math.random() * max + 1);
 };
 
+// チャンネルを複製する
 const copyChannel = async (original, category) => {
     // テキストチャンネルじゃなかったら無視
     if (original.type != 'GUILD_TEXT') return;
