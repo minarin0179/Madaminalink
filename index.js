@@ -126,7 +126,7 @@ client.once('ready', async () => {
         }],
     }];
     // スラッシュコマンドを登録
-    await client.application.commands.set(commands, '926052259069059102');
+    await client.application.commands.set(commands);
     console.log('準備完了！');
 });
 
