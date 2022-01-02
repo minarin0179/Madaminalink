@@ -18,7 +18,9 @@ client.once('ready', async () => {
             description: 'コピーするチャンネル/カテゴリー',
             required: true,
         }],
-    }, {
+    },
+    /* copy_betaは削除済み
+     {
         name: 'copy_beta',
         description: 'チャンネルをメッセージや添付ファイルを含めて複製します',
         options: [{
@@ -44,7 +46,9 @@ client.once('ready', async () => {
                 required: true,
             }],
         }],
-    }, {
+    },
+    */
+    {
         name: 'dice',
         description: 'ダイスを作成します(?d?)',
         options: [{
@@ -107,9 +111,22 @@ client.once('ready', async () => {
             description: '密談チャンネルの数(不要な場合は0)',
             required: true,
         }],
+    }, {
+        name: 'cleanup',
+        description: 'チャンネルに送信されたメッセージをすべて削除します',
+    }, {
+        name: 'delete',
+        description: 'カテゴリを削除します(カテゴリーに含まれるチャンネルも削除されます)',
+        options: [{
+            type: 'CHANNEL',
+            channelTypes: ['GUILD_CATEGORY'],
+            name: 'category',
+            description: '削除するカテゴリ',
+            required: true,
+        }],
     }];
     // スラッシュコマンドを登録
-    await client.application.commands.set(commands);
+    await client.application.commands.set(commands, '926052259069059102');
     console.log('準備完了！');
 });
 
@@ -121,8 +138,13 @@ client.on('messageCreate', message => {
     const args = message.content.slice(prefix.length).trim().split(' ');
     const command = args.shift().toLowerCase();
 
+    if (command === 'cleanup') {
+        message.channel.clone();
+        message.channel.delete();
+    }
+
     // ダイスコマンドを処理
-    if (command.split('d').length == 2) {
+    else if (command.split('d').length == 2) {
         message.channel.send('<@' + message.member.id + '> ' + DiceRole(command));
     }
 });
@@ -151,8 +173,29 @@ client.on('interactionCreate', async (interaction) => {
         return;
     }
 
+    // copyコマンドを処理
+    else if (interaction.commandName === 'copy') {
+        const original = interaction.options.getChannel('テキストチャンネルまたはカテゴリー');
+        if (original.type === 'GUILD_TEXT') {
+            await copyChannel(original, original.parent).then(() => {
+                interaction.followUp({ content: 'コピーは正常に完了しました', ephemeral: true });
+            });
+        }
+        else if (original.type === 'GUILD_CATEGORY') {
+            original.guild.channels.create('copy ' + original.name, {
+                type: 'GUILD_CATEGORY',
+                permissionOverwrites: original.permissionOverwrites.cache,
+            }).then(async (new_category) => {
+                for await (const ch of original.children) {
+                    await copyChannel(ch[1], new_category);
+                }
+            });
+            interaction.followUp({ content: 'コピーは正常に完了しました', ephemeral: true });
+        }
+    }
+    /*
     // copy_betaコマンドの処理
-    if (interaction.commandName === 'copy_beta') {
+    else if (interaction.commandName === 'copy_beta') {
         // テキストチャンネルを複製
         if (interaction.options.getSubcommand() === 'text_channel') {
             const original = interaction.options.getChannel('text_channel');
@@ -175,27 +218,7 @@ client.on('interactionCreate', async (interaction) => {
         }
         await interaction.followUp({ content: 'コピーは正常に完了しました', ephemeral: true });
     }
-
-    // copyコマンドを処理
-    else if (interaction.commandName === 'copy') {
-        const original = interaction.options.getChannel('テキストチャンネルまたはカテゴリー');
-        if (original.type === 'GUILD_TEXT') {
-            await copyChannel(original, original.parent).then(() => {
-                interaction.followUp({ content: 'コピーは正常に完了しました', ephemeral: true });
-            });
-        }
-        else if (original.type === 'GUILD_CATEGORY') {
-            original.guild.channels.create('copy ' + original.name, {
-                type: 'GUILD_CATEGORY',
-                permissionOverwrites: original.permissionOverwrites.cache,
-            }).then(async (new_category) => {
-                for await (const ch of original.children) {
-                    copyChannel(ch[1], new_category);
-                }
-            });
-            interaction.followUp({ content: 'コピーは正常に完了しました', ephemeral: true });
-        }
-    }
+    */
 
     // diceコマンドを処理
     else if (interaction.commandName === 'dice') {
@@ -262,7 +285,7 @@ client.on('interactionCreate', async (interaction) => {
         await interaction.followUp('完了しました');
     }
 
-    if (interaction.commandName === 'setup') {
+    else if (interaction.commandName === 'setup') {
         // シナリオ名を取得
         const title = interaction.options.getString('シナリオ名');
         // 送信するサーバーを取得
@@ -400,6 +423,21 @@ client.on('interactionCreate', async (interaction) => {
                 }],
             });
         }
+        await interaction.followUp('完了しました');
+    }
+
+    else if (interaction.commandName === 'cleanup') {
+        interaction.channel.clone();
+        interaction.channel.delete();
+    }
+    // deleteコマンドを処理
+    else if (interaction.commandName === 'delete') {
+        const category = interaction.options.getChannel('category');
+
+        await category.children.forEach(async (channel) => { await channel.delete(); });
+
+        await category.delete();
+
         await interaction.followUp('完了しました');
     }
 });
