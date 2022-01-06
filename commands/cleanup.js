@@ -13,19 +13,22 @@ module.exports = {
 
     async execute(interaction) {
         const original = interaction.options.getChannel('テキストチャンネルまたはカテゴリー');
-        const name = original.name;
 
         // チャンネルの指定がなければ送信されたチャンネル
         if (original === null) {
             interaction.channel.clone();
             interaction.channel.delete();
+            return;
         }
 
+        const name = original.name;
+
         // テキストチャンネルの場合
-        else if (original.type === 'GUILD_TEXT') {
+        if (original.type === 'GUILD_TEXT') {
             original.clone();
             original.delete();
             await interaction.reply({ content: `テキストチャンネル「${name}」のメッセージを削除しました`, ephemeral: true });
+            return;
         }
 
         // カテゴリーの場合
