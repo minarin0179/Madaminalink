@@ -24,7 +24,7 @@ client.once('ready', async () => {
     }
 
     // スラッシュコマンドをサーバーに登録
-    await client.application.commands.set(data);
+    await client.application.commands.set(data, '926052259069059102');
     console.log('Ready!');
 });
 
@@ -38,7 +38,6 @@ client.on('messageCreate', message => {
 
     // ダイスコマンドを処理
     if (command.split('d').length != 2) return;
-    console.log(command.split('d'));
     if (isNaN(command.split('d')[0]) || isNaN(command.split('d')[1])) return;
 
     message.channel.send('<@' + message.member.id + '> ' + DiceRole(command));
@@ -54,6 +53,38 @@ client.on('interactionCreate', async (interaction) => {
         await interaction.channel.send(`<@${interaction.member.id}> 🎲 ${DiceRole(interaction.component.label)}`);
         await interaction.deleteReply();
         return;
+    }
+    if (interaction.customId === 'set_role') {
+        const id = interaction.message.content.slice(3, -1);
+        interaction.guild.roles.fetch(id).then(async (role) => {
+            if (role == null) {
+                interaction.reply({ content: 'このロールはすでに削除されています', ephemeral: true });
+                return;
+            }
+            interaction.member.roles.add(role)
+                .then(() => {
+                    interaction.reply({ content: `「<@&${role.id}>」を付与しました`, ephemeral: true });
+                })
+                .catch(() => {
+                    interaction.reply({ content: `「<@&${role.id}>」を付与できませんでした。\nマダミナリンクより上位のロールは付与できません`, ephemeral: true });
+                });
+        });
+    }
+    if (interaction.customId === 'remove_role') {
+        const id = interaction.message.content.slice(3, -1);
+        interaction.guild.roles.fetch(id).then(async (role) => {
+            if (role == null) {
+                interaction.reply({ content: 'このロールはすでに削除されています', ephemeral: true });
+                return;
+            }
+            interaction.member.roles.remove(role)
+                .then(() => {
+                    interaction.reply({ content: `「<@&${role.id}>」を解除しました`, ephemeral: true });
+                })
+                .catch(() => {
+                    interaction.reply({ content: `「<@&${role.id}>」を解除できませんでした。\nマダミナリンクより上位のロールは解除できません`, ephemeral: true });
+                });
+        });
     }
 
     // コマンドやボタン以外は無視
@@ -94,6 +125,10 @@ const DiceRole = (str) => {
     const figure = str.replace(/ /g, '');
     const args = figure.split('d');
 
+    if (args[0] < 1 || args[0] > 100 || args[1] < 2 || args[1] > 10000) {
+        return '不正な値です ダイスの数は1~100 ダイスの面数は2~10000で指定してください';
+    }
+
     if (args[0] == 1) {
         return figure + ' → ' + getRandomInt(args[1]);
     }
@@ -122,7 +157,7 @@ cron.schedule('* * * * *', () => {
         // remindチャンネルのメッセージを取得
         const messages = await channel.messages.fetch();
 
-        messages.forEach(async (message) => {
+        messages.forEach((message) => {
             if (message.embeds.length < 1) {
                 message.delete();
                 return;
@@ -139,12 +174,20 @@ cron.schedule('* * * * *', () => {
             const channelid = fields[1].value.slice(2, -1);
             const text = fields[2].value;
 
-            // リマインドを送信
-            const target = await channel.guild.channels.fetch(channelid);
-            await target.send(text).catch(err => console.log(err));
+            // リマインド先のチャンネルを取得
+            const target = channel.guild.channels.cache.get((channelid));
 
             // リマインドを削除
             message.delete();
+
+            // リマインド先が見つからなかったら
+            if (target === undefined) {
+                channel.send(`@everyone\nリマインドが正しく送信されませんでした\nチャンネルが削除されていた可能性があります\nこのメッセージは一分後に削除されます\n送信されなかったメッセージ\n「${text}」`);
+                return;
+            }
+
+            // リマインドを送信
+            target.send(text);
         });
     });
 });
