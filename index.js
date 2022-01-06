@@ -24,7 +24,7 @@ client.once('ready', async () => {
     }
 
     // スラッシュコマンドをサーバーに登録
-    await client.application.commands.set(data, '926052259069059102');
+    await client.application.commands.set(data);
     console.log('Ready!');
 });
 
@@ -50,9 +50,9 @@ client.on('interactionCreate', async (interaction) => {
 
     // 全員実行可能なコマンド
     if (interaction.customId === 'dicerole') {
-        await interaction.followUp('ダイスロールを実行中');
+        await interaction.reply('ダイスロールを実行中');
         await interaction.channel.send(`<@${interaction.member.id}> 🎲 ${DiceRole(interaction.component.label)}`);
-        await interaction.editReply('ダイスロールを完了!');
+        await interaction.deleteReply();
         return;
     }
 
@@ -122,7 +122,7 @@ cron.schedule('* * * * *', () => {
         // remindチャンネルのメッセージを取得
         const messages = await channel.messages.fetch();
 
-        messages.forEach(async(message) => {
+        messages.forEach(async (message) => {
             if (message.embeds.length < 1) {
                 message.delete();
                 return;
