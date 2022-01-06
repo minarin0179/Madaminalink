@@ -7,18 +7,25 @@ module.exports = {
         options: [{
             type: 'NUMBER',
             name: 'ダイスの数',
-            description: '何回ダイスを振るか',
+            description: '何回ダイスを振るか(1~100)',
             required: true,
         }, {
             type: 'NUMBER',
             name: 'ダイスの面数',
-            description: '何面ダイスを振るか',
+            description: '何面ダイスを振るか(2~10000)',
             required: true,
         }],
     },
     need_admin: false,
 
     async execute(interaction) {
+        const x = interaction.options.getNumber('ダイスの数');
+        const y = interaction.options.getNumber('ダイスの面数');
+
+        if (x < 1 || x > 100 || y < 2 || y > 10000) {
+            interaction.reply({ content: '不正な値です ダイスの数は1~100 ダイスの面数は2~10000で指定してください', ephemeral: true });
+            return;
+        }
         const button = new Discord.MessageButton()
             .setCustomId('dicerole')
             .setStyle('PRIMARY')
