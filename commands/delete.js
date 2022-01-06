@@ -19,6 +19,6 @@ module.exports = {
 
         await category.delete();
 
-        await interaction.reply({ content: '完了しました', ephemeral: true });
+        await interaction.reply({ content: `「${category.name}」を削除しました`, ephemeral: true });
     },
 };
