@@ -62,6 +62,7 @@ module.exports = {
                 const content = message.content;
                 const files = await message.attachments.map(attachment => attachment.url);
                 const components = message.components;
+                const embeds = message.embeds;
 
                 // 予期せぬパターンをはじいておく
                 if (content == '' && files.size == 0) continue;
@@ -76,6 +77,7 @@ module.exports = {
                     content: content,
                     files: files,
                     components: components,
+                    embeds: embeds,
                 });
             }
         });

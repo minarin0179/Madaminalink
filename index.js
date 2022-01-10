@@ -46,10 +46,12 @@ client.on('interactionCreate', async (interaction) => {
 
     if (interaction.isButton()) {
         const button = buttons[interaction.customId];
+
         try {
             await button.execute(interaction);
         } catch (err) {
             console.log(err);
+            console.log(interaction.customId);
             interaction.replied || interaction.deferred
                 ? await interaction.followUp({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true })
                 : await interaction.reply({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true });

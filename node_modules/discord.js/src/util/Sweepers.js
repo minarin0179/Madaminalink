@@ -353,7 +353,7 @@ class Sweepers {
 
   /**
    * Creates a sweep filter that sweeps outdated messages (edits taken into account)
-   * @param {number} [lifetime=3600] How long ago a message has to hvae been sent or  edited to be valid for sweeping
+   * @param {number} [lifetime=3600] How long ago a message has to have been sent or edited to be valid for sweeping
    * @returns {GlobalSweepFilter}
    */
   static outdatedMessageSweepFilter(lifetime = 3600) {
@@ -375,11 +375,11 @@ class Sweepers {
    * Sweep a direct sub property of all guilds
    * @param {string} key The name of the property
    * @param {Function} filter Filter function passed to sweep
-   * @param {SweepEventOptions} [eventOptions] Options for the Client event emitted here
+   * @param {SweepEventOptions} [eventOptions={}] Options for the Client event emitted here
    * @returns {Object} Object containing the number of guilds swept and the number of items swept
    * @private
    */
-  _sweepGuildDirectProp(key, filter, { emit = true, outputName }) {
+  _sweepGuildDirectProp(key, filter, { emit = true, outputName } = {}) {
     if (typeof filter !== 'function') {
       throw new TypeError('INVALID_TYPE', 'filter', 'function');
     }

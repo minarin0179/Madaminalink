@@ -27,7 +27,6 @@ module.exports = {
 
                     for (const [key] of keys) {
                         if (reactions.has(key)) {
-                            console.log(mes.content);
                             this.send_message(target, mes);
                         }
                     }
@@ -50,7 +49,11 @@ module.exports = {
 
         // 添付ファイルだけの時
         if (content == '') {
-            target.send({ files });
+            target.send({
+                files: files,
+                components: components,
+                embeds: embeds,
+            });
             return;
         }
 
