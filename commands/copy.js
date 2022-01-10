@@ -58,9 +58,10 @@ module.exports = {
         if (original.type != 'GUILD_TEXT') return;
 
         await original.messages.fetch().then(async (messages) => {
-            for await (const message of messages.reverse()) {
-                const content = message[1].content;
-                const files = await message[1].attachments.map(attachment => attachment.url);
+            for await (const [, message] of messages.reverse()) {
+                const content = message.content;
+                const files = await message.attachments.map(attachment => attachment.url);
+                const components = message.components;
 
                 // 予期せぬパターンをはじいておく
                 if (content == '' && files.size == 0) continue;
@@ -74,6 +75,7 @@ module.exports = {
                 await new_channel.send({
                     content: content,
                     files: files,
+                    components: components,
                 });
             }
         });

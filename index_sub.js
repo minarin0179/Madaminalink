@@ -4,7 +4,7 @@ const fs = require('fs');
 const cron = require('node-cron');
 
 // configを読み込み
-const { prefix, token } = require('./config.json');
+const { prefix, token } = require('./config_sub.json');
 
 // クライアントを作成
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS] });

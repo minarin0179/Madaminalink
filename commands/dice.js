@@ -27,7 +27,7 @@ module.exports = {
             return;
         }
         const button = new Discord.MessageButton()
-            .setCustomId('dicerole')
+            .setCustomId('diceroll')
             .setStyle('PRIMARY')
             .setLabel(`${interaction.options.getNumber('ダイスの数')} d ${interaction.options.getNumber('ダイスの面数')}`);
         await interaction.channel.send({
