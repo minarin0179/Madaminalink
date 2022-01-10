@@ -69,7 +69,11 @@ module.exports = {
 
                 // 添付ファイルだけの時
                 if (content == '') {
-                    await new_channel.send({ files });
+                    await new_channel.send({
+                        files: files,
+                        components: components,
+                        embeds: embeds,
+                    });
                     continue;
                 }
 
