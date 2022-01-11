@@ -14,18 +14,21 @@ module.exports = {
             return;
         }
 
+        interaction.message.reactions.cache.clear();
+
         interaction.message.fetch().then(message => {
-
+            // メッセージにつけられたリアクションを取得
             const reactions = message.reactions.cache;
-
+            
+            interaction.channel.messages.cache.clear();
             interaction.channel.messages.fetch().then(messages => {
                 messages.reverse().forEach(mes => {
 
-                    if (mes == interaction.message) return;
+                    if (mes.id == interaction.message.id) return;
                     const keys = mes.reactions.cache;
 
-
                     for (const [key] of keys) {
+                        console.log(key);
                         if (reactions.has(key)) {
                             this.send_message(target, mes);
                         }
@@ -33,6 +36,7 @@ module.exports = {
                 });
             });
 
+            // reactions.clear();
         });
         interaction.reply({ content: 'メッセージの転送が完了しました', ephemeral: true });
 
