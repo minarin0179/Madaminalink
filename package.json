@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "discord.js": "^13.5.1",
+    "dotenv": "^11.0.0",
     "eslint": "^8.5.0",
     "node-cron": "^3.0.0"
   }

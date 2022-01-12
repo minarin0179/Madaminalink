@@ -2,9 +2,9 @@
 const { Client, Intents } = require('discord.js');
 const fs = require('fs');
 const cron = require('node-cron');
+const dotenv = require('dotenv');
 
-// configを読み込み
-const { prefix, token } = require('./config_sub.json');
+dotenv.config();
 
 // クライアントを作成
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS] });
@@ -46,6 +46,7 @@ client.on('interactionCreate', async (interaction) => {
 
     if (interaction.isButton()) {
         const button = buttons[interaction.customId];
+
         try {
             await button.execute(interaction);
         } catch (err) {
@@ -65,19 +66,13 @@ client.on('interactionCreate', async (interaction) => {
     const command = commands[interaction.commandName];
 
     if (command === undefined) {
-        await interaction.reply({
-            content: 'このコマンドは存在しません',
-            ephemeral: true,
-        });
+        await interaction.reply({ content: 'このコマンドは存在しません', ephemeral: true });
         return;
     }
 
     // 管理者権限が必要なコマンドか判断
     if (command.need_admin && !interaction.member.permissions.has('ADMINISTRATOR')) {
-        await interaction.reply({
-            content: 'このコマンドを実行する権限がありません',
-            ephemeral: true,
-        });
+        await interaction.reply({ content: 'このコマンドを実行する権限がありません', ephemeral: true });
         return;
     }
 
@@ -85,6 +80,7 @@ client.on('interactionCreate', async (interaction) => {
     try {
         await command.execute(interaction);
     } catch (error) {
+        console.log(error);
         interaction.replied || interaction.deferred
             ? await interaction.followUp({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true })
             : await interaction.reply({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true });
@@ -97,4 +93,4 @@ cron.schedule('* * * * *', () => {
     remind.execute(client);
 });
 
-client.login(token);
+client.login(process.env.DISCORD_TOKEN_SUB);
