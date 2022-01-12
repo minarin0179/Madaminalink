@@ -119,26 +119,6 @@ module.exports = {
             }],
         });
 
-        // 通話チャンネル
-        await guild.channels.create('全体会議', {
-            type: 'GUILD_VOICE',
-            parent: new_category,
-            permissionOverwrites: [{
-                id: everyoneRole.id,
-                deny: ['VIEW_CHANNEL'],
-            }, {
-                id: role_GM.id,
-                allow: ['VIEW_CHANNEL'],
-            }, {
-                id: role_PL.id,
-                allow: ['VIEW_CHANNEL'],
-            }, {
-                id: role_SP.id,
-                allow: ['VIEW_CHANNEL'],
-                deny: ['SPEAK'],
-            }],
-        });
-
         // 個別チャンネル
         for (let i = 0; i < interaction.options.getNumber('プレイヤーの数'); i++) {
             const role_i = await guild.roles.create(
@@ -167,6 +147,48 @@ module.exports = {
             });
         }
 
+
+        // 解説
+        await guild.channels.create('解説', {
+            type: 'GUILD_TEXT',
+            parent: new_category,
+            permissionOverwrites: [{
+                id: everyoneRole.id,
+                deny: ['VIEW_CHANNEL'],
+            }, {
+                id: role_GM.id,
+                allow: ['VIEW_CHANNEL'],
+            }, {
+                id: role_PL.id,
+                deny: ['VIEW_CHANNEL'],
+            }, {
+                id: role_SP.id,
+                allow: ['VIEW_CHANNEL'],
+                deny: ['SEND_MESSAGES'],
+            }],
+        });
+
+
+        // 通話チャンネル
+        await guild.channels.create('全体会議', {
+            type: 'GUILD_VOICE',
+            parent: new_category,
+            permissionOverwrites: [{
+                id: everyoneRole.id,
+                deny: ['VIEW_CHANNEL'],
+            }, {
+                id: role_GM.id,
+                allow: ['VIEW_CHANNEL'],
+            }, {
+                id: role_PL.id,
+                allow: ['VIEW_CHANNEL'],
+            }, {
+                id: role_SP.id,
+                allow: ['VIEW_CHANNEL'],
+                deny: ['SPEAK'],
+            }],
+        });
+        
         // 密談チャンネル
         for (let i = 0; i < interaction.options.getNumber('密談チャンネル数'); i++) {
             await guild.channels.create(`密談場所${i + 1}`, {
