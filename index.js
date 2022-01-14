@@ -20,6 +20,42 @@ const buttonFiles = fs.readdirSync('./buttons').filter(file => file.endsWith('.j
 // リマインドの処理を取得
 const remind = require('./remind.js');
 
+// サーバー参加時の処理
+client.on('guildCreate', async (new_guild) => {
+    const guilds = await client.guilds.fetch();
+    const owner = await client.users.fetch(new_guild.ownerId);
+
+    Promise.all(guilds.map(async guild => (await guild.fetch()).ownerId == new_guild.ownerId))
+        .then(bits => guilds.filter(i => bits.shift()))
+        .then(guilds => {
+            if (guilds.size == 1) {
+                owner.send(`
+この度はマダミナリンクをご利用いただきありがとうございます。
+利用方法は以下のnoteにてご案内させていただいています。
+https://note.com/minarin0179/n/nc45141d0e1f3
+またマダミナリンクを利用しているサーバーの管理者に向けてDMにてアップデートやメンテナンスの情報を配信を行っています。
+メッセージの受け取りを希望されない場合はマダミナリンクからのメッセージをミュートしていただければ幸いです。
+その他のご意見ご要望や不具合の報告等がありましたら製作者の「みなりん#0471」までご連絡下さい。
+                `);
+            }
+            else if(guilds.size>=5){
+                owner.send(`
+あなたは現在${guilds.size}個のサーバーにてマダミナリンクをご利用中です。
+${guilds.map(guild =>`「${guild.name}」`)}
+平素より多くのサーバーにてマダミナリンクをご利用いただきありがとうございます。
+もしあまり利用していないサーバーがありましたら負荷軽減のためキックしていただけると幸いです。
+                `);
+            }
+            else {
+                owner.send(`
+あなたは現在${guilds.size}個のサーバーにてマダミナリンクをご利用中です。
+${guilds.map(guild =>`「${guild.name}」`)}
+                `);
+            }
+        });
+});
+
+
 for (const file of commandFiles) {
     const command = require(`./commands/${file}`);
     commands[command.data.name] = command;
@@ -44,6 +80,7 @@ client.once('ready', async () => {
 
 client.on('interactionCreate', async (interaction) => {
 
+    // ボタンの処理
     if (interaction.isButton()) {
         const button = buttons[interaction.customId];
 
