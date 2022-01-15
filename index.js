@@ -4,6 +4,7 @@ const fs = require('fs');
 const cron = require('node-cron');
 const dotenv = require('dotenv');
 
+// 環境変数を読み込み
 dotenv.config();
 
 // クライアントを作成
@@ -12,80 +13,41 @@ const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_
 // コマンドを取得
 const commands = {};
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+commandFiles.forEach(file => {
+    const command = require(`./commands/${file}`);
+    commands[command.data.name] = command;
+});
 
-// ボタンの処理を取得
+// ボタンを取得
 const buttons = {};
 const buttonFiles = fs.readdirSync('./buttons').filter(file => file.endsWith('.js'));
+buttonFiles.forEach(file => {
+    const button = require(`./buttons/${file}`);
+    buttons[button.customId] = button;
+});
 
 // リマインドの処理を取得
 const remind = require('./remind.js');
+const welcome = require('./welcome.js');
 
 // サーバー参加時の処理
 client.on('guildCreate', async (new_guild) => {
-    const guilds = await client.guilds.fetch();
-    const owner = await client.users.fetch(new_guild.ownerId);
-
-    Promise.all(guilds.map(async guild => (await guild.fetch()).ownerId == new_guild.ownerId))
-        .then(bits => guilds.filter(() => bits.shift()))
-        .then(owner_guilds => {
-            if (owner_guilds.size == 1) {
-                owner.send(`
-この度はマダミナリンクをご利用いただきありがとうございます。
-利用方法は以下のnoteにてご案内させていただいています。
-https://note.com/minarin0179/n/nc45141d0e1f3
-またマダミナリンクを利用しているサーバーの管理者に向けてDMにてアップデートやメンテナンスの情報を配信を行っています。
-メッセージの受け取りを希望されない場合はマダミナリンクからのメッセージをミュートしていただければ幸いです。
-その他のご意見ご要望や不具合の報告等がありましたら製作者の「みなりん#0471」までご連絡下さい。
-                `);
-            }
-            else if (owner_guilds.size >= 5) {
-                owner.send(`
-あなたは現在${owner_guilds.size}個のサーバーにてマダミナリンクをご利用中です。
-${owner_guilds.map(guild => `「${guild.name}」`)}
-平素より多くのサーバーにてマダミナリンクをご利用いただきありがとうございます。
-もしあまり利用していないサーバーがありましたら負荷軽減のためキックしていただけると幸いです。
-                `);
-            }
-            else {
-                owner.send(`
-あなたは現在${owner_guilds.size}個のサーバーにてマダミナリンクをご利用中です。
-${owner_guilds.map(guild => `「${guild.name}」`)}
-                `);
-            }
-        });
+    welcome.execute(client, new_guild).catch(console.log);
 });
 
-
-for (const file of commandFiles) {
-    const command = require(`./commands/${file}`);
-    commands[command.data.name] = command;
-}
-
-for (const file of buttonFiles) {
-    const button = require(`./buttons/${file}`);
-    buttons[button.customId] = button;
-}
-
 client.once('ready', async () => {
-
     // スラッシュコマンドをサーバーに登録
-    const data = [];
-    for (const commandName in commands) {
-        data.push(commands[commandName].data);
-    }
-
-    await client.application.commands.set(data);
+    const datas = Object.keys(commands).map(key => commands[key].data);
+    await client.application.commands.set(datas);
     console.log('Ready!');
 });
 
 client.on('interactionCreate', async (interaction) => {
-
     // ボタンの処理
     if (interaction.isButton()) {
         const id = interaction.customId;
-
-        console.log(id);
         const button = buttons[(id.indexOf(';') == -1) ? id : id.substring(0, id.indexOf(';'))];
+        // アプデ後はこちらに移行 const button = buttons[id.substring(0, id.indexOf(';'))];
 
         try {
             await button.execute(interaction);
@@ -98,7 +60,6 @@ client.on('interactionCreate', async (interaction) => {
         }
         return;
     }
-
 
     // コマンドやボタン以外は無視
     if (!interaction.isCommand()) return;
@@ -128,7 +89,6 @@ client.on('interactionCreate', async (interaction) => {
             : await interaction.reply({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true });
     }
 });
-
 
 cron.schedule('* * * * *', () => {
     // リマインダーの確認と送信
