@@ -35,11 +35,12 @@ module.exports = {
         // GMロールを作成
         const role_GM = await guild.roles.create({ name: `${title}_GM` });
 
+        // 観戦ロールを作成
+        const role_SP = await guild.roles.create({ name: `(観戦)${title}` });
+
         // PLロールを作成
         const role_PL = await guild.roles.create({ name: `${title}_PL` });
 
-        // 観戦ロールを作成
-        const role_SP = await guild.roles.create({ name: `(観戦)${title}` });
 
         // カテゴリーを作成
         const new_category = await guild.channels.create(title, {
@@ -188,7 +189,7 @@ module.exports = {
                 deny: ['SPEAK'],
             }],
         });
-        
+
         // 密談チャンネル
         for (let i = 0; i < interaction.options.getNumber('密談チャンネル数'); i++) {
             await guild.channels.create(`密談場所${i + 1}`, {

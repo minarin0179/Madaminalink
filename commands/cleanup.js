@@ -12,12 +12,13 @@ module.exports = {
     need_admin: true,
 
     async execute(interaction) {
-        const original = interaction.options.getChannel('テキストチャンネルまたはカテゴリー');
+        // コピーするカテゴリーを取得
+        const original = await interaction.options.getChannel('テキストチャンネルまたはカテゴリー');
 
         // チャンネルの指定がなければ送信されたチャンネル
         if (original === null) {
-            interaction.channel.clone();
-            interaction.channel.delete();
+            await interaction.channel.clone();
+            await interaction.channel.delete();
             return;
         }
 
@@ -25,8 +26,8 @@ module.exports = {
 
         // テキストチャンネルの場合
         if (original.type === 'GUILD_TEXT') {
-            original.clone();
-            original.delete();
+            await original.clone();
+            await original.delete();
             await interaction.reply({ content: `テキストチャンネル「${name}」のメッセージを削除しました`, ephemeral: true });
             return;
         }
@@ -34,8 +35,8 @@ module.exports = {
         // カテゴリーの場合
         else if (original.type === 'GUILD_CATEGORY') {
             for await (const channel of original.children) {
-                channel[1].clone();
-                channel[1].delete();
+                await channel[1].clone();
+                await channel[1].delete();
             }
             await interaction.reply({ content: `カテゴリ「${name}」内のすべてのチャンネルのメッセージを削除しました`, ephemeral: true });
         }

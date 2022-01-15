@@ -4,10 +4,12 @@ module.exports = {
     async execute(interaction) {
         const id = interaction.message.content.slice(3, -1);
         interaction.guild.roles.fetch(id).then(async (role) => {
+            // ロールが存在しない場合
             if (role == null) {
                 interaction.reply({ content: 'このロールはすでに削除されています', ephemeral: true });
                 return;
             }
+            // ロールを付与
             interaction.member.roles.add(role)
                 .then(() => {
                     interaction.reply({ content: `「<@&${role.id}>」を付与しました`, ephemeral: true });

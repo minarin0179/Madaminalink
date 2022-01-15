@@ -33,14 +33,11 @@ module.exports = {
         const guild = interaction.guild;
 
         // 不正な日時かをチェックする
-        const isInvalidDate = (date) => Number.isNaN(new Date(date).getDate());
-
-        if (isInvalidDate(time)) {
+        if (Number.isNaN(new Date(time).getDate())) {
             await interaction.followUp('不正な日時です');
             return;
         }
-
-        if (new Date(time) < new Date()) {
+        else if (new Date(time) < new Date()) {
             await interaction.followUp('過去の日時は指定できません');
             return;
         }

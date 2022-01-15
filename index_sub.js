@@ -26,9 +26,9 @@ client.on('guildCreate', async (new_guild) => {
     const owner = await client.users.fetch(new_guild.ownerId);
 
     Promise.all(guilds.map(async guild => (await guild.fetch()).ownerId == new_guild.ownerId))
-        .then(bits => guilds.filter(i => bits.shift()))
-        .then(guilds => {
-            if (guilds.size == 1) {
+        .then(bits => guilds.filter(() => bits.shift()))
+        .then(owner_guilds => {
+            if (owner_guilds.size == 1) {
                 owner.send(`
 この度はマダミナリンクをご利用いただきありがとうございます。
 利用方法は以下のnoteにてご案内させていただいています。
@@ -38,18 +38,18 @@ https://note.com/minarin0179/n/nc45141d0e1f3
 その他のご意見ご要望や不具合の報告等がありましたら製作者の「みなりん#0471」までご連絡下さい。
                 `);
             }
-            else if(guilds.size>=5){
+            else if (owner_guilds.size >= 5) {
                 owner.send(`
-あなたは現在${guilds.size}個のサーバーにてマダミナリンクをご利用中です。
-${guilds.map(guild =>`「${guild.name}」`)}
+あなたは現在${owner_guilds.size}個のサーバーにてマダミナリンクをご利用中です。
+${owner_guilds.map(guild => `「${guild.name}」`)}
 平素より多くのサーバーにてマダミナリンクをご利用いただきありがとうございます。
 もしあまり利用していないサーバーがありましたら負荷軽減のためキックしていただけると幸いです。
                 `);
             }
             else {
                 owner.send(`
-あなたは現在${guilds.size}個のサーバーにてマダミナリンクをご利用中です。
-${guilds.map(guild =>`「${guild.name}」`)}
+あなたは現在${owner_guilds.size}個のサーバーにてマダミナリンクをご利用中です。
+${owner_guilds.map(guild => `「${guild.name}」`)}
                 `);
             }
         });
@@ -86,7 +86,8 @@ client.on('interactionCreate', async (interaction) => {
 
         try {
             await button.execute(interaction);
-        } catch (err) {
+        }
+        catch (err) {
             console.log(err);
             interaction.replied || interaction.deferred
                 ? await interaction.followUp({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true })
@@ -116,7 +117,8 @@ client.on('interactionCreate', async (interaction) => {
     // コマンドを実行
     try {
         await command.execute(interaction);
-    } catch (error) {
+    }
+    catch (error) {
         console.log(error);
         interaction.replied || interaction.deferred
             ? await interaction.followUp({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true })

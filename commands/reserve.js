@@ -26,39 +26,22 @@ module.exports = {
             .setColor('#0099ff')
             .setTitle('転送するメッセージと同じリアクションを付けてください')
             .addFields(
-                { name: '送信先', value: `<#${destination.id}>`, inline: true },
+                { name: '送信先', value: `${destination}`, inline: true },
             );
 
+        // ボタンを作成
         const button = new Discord.MessageButton()
-            .setCustomId('transfer')
+            .setCustomId(`transfer;${destination.id}`)
             .setStyle('PRIMARY')
             .setLabel('転送');
 
-            /*
-        const channels = interaction.guild.channels.cache;
-        const selectmenu = new Discord.MessageSelectMenu()
-            .setCustomId('target')
-            .setPlaceholder('送信先を選択してください')
-            .addOptions([
-                {
-                    label: 'firstoption',
-                    valud: 'hoge',
-                    description:'hoge',
-                },
-                {
-                    label: 'secondoption',
-                    valud: 'hogehoge',
-                    description:'hogehoge',
-                },
-            ]);
-*/
         // remindを送信
         await interaction.channel.send({
             embeds: [exampleEmbed],
             components: [new Discord.MessageActionRow().addComponents(button)],
         });
 
+        // インタラクションを削除
         await interaction.deleteReply();
-
     },
 };

@@ -7,6 +7,7 @@ module.exports = {
 
     async execute(interaction) {
 
+        // 本文を送信
         await interaction.reply({
             ephemeral:true,
             content: `
@@ -24,6 +25,7 @@ module.exports = {
 /role : ロールの付け外しができるボタンを表示します
 /transfer : メッセージを別のチャンネルに向けて転送できます
 詳しい使い方が知りたい方は以下のnoteを参照してください
+https://note.com/minarin0179/n/nc45141d0e1f3
             `,
         });
     },

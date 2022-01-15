@@ -13,10 +13,14 @@ module.exports = {
     need_admin: true,
 
     async execute(interaction) {
+
+        // 削除するカテゴリーを取得
         const category = interaction.options.getChannel('category');
 
+        // 子チャンネルを削除
         await category.children.forEach(async (channel) => { await channel.delete(); });
 
+        // カテゴリーを削除
         await category.delete();
 
         await interaction.reply({ content: `「${category.name}」を削除しました`, ephemeral: true });

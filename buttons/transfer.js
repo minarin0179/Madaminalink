@@ -19,7 +19,7 @@ module.exports = {
         interaction.message.fetch().then(message => {
             // メッセージにつけられたリアクションを取得
             const reactions = message.reactions.cache;
-            
+
             interaction.channel.messages.cache.clear();
             interaction.channel.messages.fetch().then(messages => {
                 messages.reverse().forEach(mes => {
@@ -43,6 +43,7 @@ module.exports = {
     },
     send_message(target, message) {
 
+        // 各種データを取得
         const content = message.content;
         const files = message.attachments.map(attachment => attachment.url);
         const components = message.components;
@@ -61,6 +62,7 @@ module.exports = {
             return;
         }
 
+        // contentがある場合
         target.send({
             content: content,
             files: files,

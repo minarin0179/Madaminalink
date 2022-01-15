@@ -14,8 +14,15 @@ module.exports = {
                     message.delete();
                     return;
                 }
+
                 // リマインドのデータを取得
                 const fields = message.embeds[0].fields;
+
+                if (fields.length < 1) {
+                    message.delete();
+                    return;
+                }
+
                 // リマインド時刻を取得
                 const time = new Date(fields[0].value);
 
