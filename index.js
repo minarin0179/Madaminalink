@@ -26,7 +26,7 @@ buttonFiles.forEach(file => {
     buttons[button.customId] = button;
 });
 
-// リマインドの処理を取得
+// その他の処理を取得
 const remind = require('./remind.js');
 const welcome = require('./welcome.js');
 
@@ -53,7 +53,7 @@ client.on('interactionCreate', async (interaction) => {
             await button.execute(interaction);
         }
         catch (err) {
-            console.log(err);
+            console.log(id, err);
             interaction.replied || interaction.deferred
                 ? await interaction.followUp({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true })
                 : await interaction.reply({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true });
@@ -83,7 +83,7 @@ client.on('interactionCreate', async (interaction) => {
         await command.execute(interaction);
     }
     catch (error) {
-        console.log(error);
+        console.log(interaction.commandName, error);
         interaction.replied || interaction.deferred
             ? await interaction.followUp({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true })
             : await interaction.reply({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true });

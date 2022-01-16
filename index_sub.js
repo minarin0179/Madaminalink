@@ -53,7 +53,7 @@ client.on('interactionCreate', async (interaction) => {
             await button.execute(interaction);
         }
         catch (err) {
-            console.log(err);
+            console.log(id, err);
             interaction.replied || interaction.deferred
                 ? await interaction.followUp({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true })
                 : await interaction.reply({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true });
@@ -83,7 +83,7 @@ client.on('interactionCreate', async (interaction) => {
         await command.execute(interaction);
     }
     catch (error) {
-        console.log(error);
+        console.log(interaction.commandName, error);
         interaction.replied || interaction.deferred
             ? await interaction.followUp({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true })
             : await interaction.reply({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true });
