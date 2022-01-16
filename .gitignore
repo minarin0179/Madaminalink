@@ -3,4 +3,3 @@
 node_modules/*
 *.json
 announce.js
-welcome.js
