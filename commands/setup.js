@@ -17,6 +17,16 @@ module.exports = {
             name: '密談チャンネル数',
             description: '密談チャンネルの数(不要な場合は0)',
             required: true,
+        }, {
+            type: 'ROLE',
+            name: 'ロールを作成する位置',
+            description: '新規ロールを指定したロールの下に作成します',
+            required: false,
+        }, {
+            type: 'BOOLEAN',
+            name: '個別ロールを作成しない',
+            description: 'Trueにすると個別chは作られますが個別ロールは作成されません',
+            required: false,
         }],
     },
     need_admin: true,
@@ -32,14 +42,16 @@ module.exports = {
         // everyoneロールを取得
         const everyoneRole = guild.roles.everyone;
 
+        const role_pos = (interaction.options.getRole('ロールを作成する位置') || everyoneRole).position;
+
         // GMロールを作成
-        const role_GM = await guild.roles.create({ name: `${title}_GM` });
+        const role_GM = await guild.roles.create({ name: `${title}_GM`, position: role_pos });
 
         // 観戦ロールを作成
-        const role_SP = await guild.roles.create({ name: `(観戦)${title}` });
+        const role_SP = await guild.roles.create({ name: `(観戦)${title}`, position: role_pos });
 
         // PLロールを作成
-        const role_PL = await guild.roles.create({ name: `${title}_PL` });
+        const role_PL = await guild.roles.create({ name: `${title}_PL`, position: role_pos });
 
 
         // カテゴリーを作成
@@ -122,13 +134,7 @@ module.exports = {
 
         // 個別チャンネル
         for (let i = 0; i < interaction.options.getNumber('プレイヤーの数'); i++) {
-            const role_i = await guild.roles.create(
-                {
-                    name: title + '_PL' + (i + 1),
-                },
-            );
-
-            await guild.channels.create(`個別ch${i + 1}`, {
+            const individual_ch = await guild.channels.create(`個別ch${i + 1}`, {
                 type: 'GUILD_TEXT',
                 parent: new_category,
                 permissionOverwrites: [{
@@ -141,10 +147,21 @@ module.exports = {
                     id: role_SP.id,
                     allow: ['VIEW_CHANNEL'],
                     deny: ['SEND_MESSAGES'],
-                }, {
-                    id: role_i.id,
-                    allow: ['VIEW_CHANNEL', 'SEND_MESSAGES'],
                 }],
+            });
+
+            if (interaction.options.getBoolean('個別ロールを作成しない')) continue;
+
+            const role_i = await guild.roles.create(
+                {
+                    name: title + '_PL' + (i + 1),
+                    position: role_pos,
+                },
+            );
+
+            individual_ch.permissionOverwrites.create(role_i, {
+                VIEW_CHANNEL: true,
+                SEND_MESSAGES: true,
             });
         }
 

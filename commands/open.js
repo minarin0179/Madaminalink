@@ -3,12 +3,18 @@ const Discord = require('discord.js');
 module.exports = {
     data: {
         name: 'open',
-        description: 'このチャンネルを特定のロールに対して公開します',
+        description: 'チャンネルを特定のロールに対して公開します',
         options: [{
             type: 'MENTIONABLE',
             name: 'target',
             description: '誰に対して公開しますか?',
             required: true,
+        }, {
+            type: 'CHANNEL',
+            channelTypes: ['GUILD_TEXT'],
+            name: 'channel',
+            description: '公開するチャンネルを指定(指定しない場合はこのチャンネル)',
+            required: false,
         }],
     },
     need_admin: true,
@@ -16,18 +22,20 @@ module.exports = {
 
         await interaction.reply('処理中です お待ちください');
 
-        // 送り先のチャンネルを取得
-        const target = interaction.options.getMentionable('target');
+        // 公開するロール
+        const target_role = interaction.options.getMentionable('target');
+        const target_channel = interaction.options.getChannel('channel') || interaction.channel;
+        await target_channel.permissionOverwrites.create(target_role, { VIEW_CHANNEL: false });
 
         // ボタンを作成
         const button = new Discord.MessageButton()
-            .setCustomId('open_')
+            .setCustomId(`open;${target_role.id},${target_channel.id}`)
             .setStyle('PRIMARY')
             .setLabel('公開');
 
         // ボタンを送信
         await interaction.channel.send({
-            content: `ボタンを押すことでこのチャンネルが${target}に対して公開されます`,
+            content: `ボタンを押すことでこのチャンネルが${target_role}に対して公開されます`,
             components: [new Discord.MessageActionRow().addComponents(button)],
         });
 

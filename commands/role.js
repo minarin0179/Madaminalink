@@ -31,7 +31,7 @@ module.exports = {
 
         // ボタンを送信
         await interaction.channel.send({
-            content: `${role}`,
+            content: `@${role.name}`,
             components: [new Discord.MessageActionRow().addComponents(set).addComponents(remove)],
         });
 
