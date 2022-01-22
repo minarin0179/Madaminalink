@@ -24,13 +24,6 @@ module.exports = {
         const category = interaction.options.getChannel('category');
         const delete_role_ids = new Set();
 
-        /*
-        // 子チャンネルを削除
-        await category.children.forEach(async (channel) => {
-            await channel.permissionOverwrites.cache.forEach(perm => delete_role_ids.add(perm.id));
-            // await channel.delete();
-        });*/
-
         await Promise.all(category.children.map(async channel => {
             await channel.permissionOverwrites.cache.forEach(perm => delete_role_ids.add(perm.id));
             await channel.delete();

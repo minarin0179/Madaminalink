@@ -7,38 +7,29 @@ module.exports = {
             channelTypes: ['GUILD_TEXT', 'GUILD_CATEGORY'],
             name: 'テキストチャンネルまたはカテゴリー',
             description: 'メッセージを削除するチャンネル/カテゴリー',
+            required: false,
         }],
     },
     need_admin: true,
 
     async execute(interaction) {
-        // コピーするカテゴリーを取得
-        const original = await interaction.options.getChannel('テキストチャンネルまたはカテゴリー');
 
-        // チャンネルの指定がなければ送信されたチャンネル
-        if (original === null) {
-            await interaction.channel.clone();
-            await interaction.channel.delete();
+        const target_ch = await interaction.options.getChannel('テキストチャンネルまたはカテゴリー') || interaction.channel;
+
+        if (target_ch.type === 'GUILD_TEXT') {
+            await target_ch.clone();
+            await target_ch.delete();
+            await interaction.reply({ content: `テキストチャンネル「${target_ch.name}」のメッセージを削除しました`, ephemeral: true });
             return;
         }
 
-        const name = original.name;
-
-        // テキストチャンネルの場合
-        if (original.type === 'GUILD_TEXT') {
-            await original.clone();
-            await original.delete();
-            await interaction.reply({ content: `テキストチャンネル「${name}」のメッセージを削除しました`, ephemeral: true });
-            return;
-        }
-
-        // カテゴリーの場合
-        else if (original.type === 'GUILD_CATEGORY') {
-            for await (const channel of original.children) {
-                await channel[1].clone();
-                await channel[1].delete();
+        else if (target_ch.type === 'GUILD_CATEGORY') {
+            // childrenで取得すると[key,value]の形になる
+            for await (const [, channel] of target_ch.children) {
+                await channel.clone();
+                await channel.delete();
             }
-            await interaction.reply({ content: `カテゴリ「${name}」内のすべてのチャンネルのメッセージを削除しました`, ephemeral: true });
+            await interaction.reply({ content: `カテゴリ「${target_ch.name}」内のすべてのチャンネルのメッセージを削除しました`, ephemeral: true });
         }
     },
 };

@@ -22,14 +22,14 @@ module.exports = {
 
         await interaction.reply('処理中です お待ちください');
 
-        // 公開するロール
         const target_role = interaction.options.getMentionable('target');
-        const target_channel = interaction.options.getChannel('channel') || interaction.channel;
-        await target_channel.permissionOverwrites.create(target_role, { VIEW_CHANNEL: false });
+        const target_ch = interaction.options.getChannel('channel') || interaction.channel;
+
+        await target_ch.permissionOverwrites.create(target_role, { VIEW_CHANNEL: false });
 
         // ボタンを作成
         const button = new Discord.MessageButton()
-            .setCustomId(`open;${target_role.id},${target_channel.id}`)
+            .setCustomId(`open;${target_role.id},${target_ch.id}`)
             .setStyle('PRIMARY')
             .setLabel('公開');
 

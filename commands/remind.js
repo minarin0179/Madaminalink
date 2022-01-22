@@ -43,10 +43,7 @@ module.exports = {
         }
 
         // 送り先のチャンネルを取得
-        let destination = interaction.options.getChannel('channel');
-
-        // 指定がない場合はコマンドを入力したチャンネルへ
-        if (destination === null) destination = interaction.channel;
+        const destination = interaction.options.getChannel('channel') || interaction.channel;
 
         // 埋め込みを作成
         const exampleEmbed = new Discord.MessageEmbed()
@@ -59,23 +56,17 @@ module.exports = {
             );
 
         // remindチャンネルを取得
-        let remind_channel = guild.channels.cache.find(channel => channel.name === 'remind');
-
-        // なかったら作る
-        if (remind_channel === undefined) {
+        const remind_ch = guild.channels.cache.find(channel => channel.name === 'remind') ||
             await guild.channels.create('remind', {
                 type: 'GUILD_TEXT',
                 permissionOverwrites: [{
                     id: guild.roles.everyone.id,
                     deny: ['VIEW_CHANNEL'],
                 }],
-            }).then(channel => {
-                remind_channel = channel;
             });
-        }
 
         // remindを送信
-        await remind_channel.send({ embeds: [exampleEmbed] });
+        await remind_ch.send({ embeds: [exampleEmbed] });
 
         await interaction.followUp('リマインダーを設定しました');
     },

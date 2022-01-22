@@ -4,7 +4,7 @@ module.exports = {
         description: 'カテゴリをログとして保存します',
         options: [{
             type: 'CHANNEL',
-            name: 'channel',
+            name: 'category',
             channelTypes: ['GUILD_CATEGORY'],
             description: '保存するカテゴリ',
             required: true,
@@ -16,16 +16,13 @@ module.exports = {
         }],
     },
     need_admin: true,
+
     async execute(interaction) {
         // 応答時間の制限を15分に
         await interaction.deferReply({ ephemeral: true });
 
         // カテゴリーを取得
-        const ch = interaction.options.getChannel('channel');
-        if (ch.name.startsWith('(ログ')) {
-            interaction.followUp('このチャンネルはすでにログ化されています');
-            return;
-        }
+        const category = interaction.options.getChannel('category');
 
         // 日付を取得
         const today = new Date();
@@ -34,35 +31,34 @@ module.exports = {
         const date = today.getDate();
 
         // カテゴリー名を変更
-        await ch.setName(`(ログ ${year}/${month}/${date}) ${ch.name}`);
+        await category.setName(`(ログ ${year}/${month}/${date}) ${category.name}`);
 
-        // ロールを取得
-        const spectator = interaction.options.getRole('spectator');
-        const everyoneRole = interaction.guild.roles.everyone;
+        const perm = {};
 
         // everyoneから見えなくする
-        await ch.permissionOverwrites.set([
-            {
-                id: everyoneRole.id,
-                deny: ['VIEW_CHANNEL', 'SEND_MESSAGES'],
-            },
-        ]);
+        perm.create([{
+            id: interaction.guild.roles.everyone.id,
+            deny: ['VIEW_CHANNEL', 'SEND_MESSAGES'],
+        }]);
 
         // 観戦ロールが指定されていたら見えるようにする
-        if (spectator != null) {
-            await ch.permissionOverwrites.create(spectator, {
+        const spectator = interaction.options.getRole('spectator');
+        if (spectator) {
+            await perm.create(spectator, {
                 VIEW_CHANNEL: true,
                 SEND_MESSAGES: false,
             });
         }
 
-        // ボイスチャンネルは削除
-        await ch.children.forEach(async (channel) => {
-            if (channel.type != 'GUILD_TEXT') {
-                channel.delete();
-                return;
+        await category.permissionOverwrites.set(perm.cache);
+
+        await category.children.forEach(async (channel) => {
+            if (channel.type === 'GUILD_TEXT') {
+                await channel.permissionOverwrites.set(perm.cache);
             }
-            await channel.permissionOverwrites.set(ch.permissionOverwrites.cache);
+            else {
+                channel.delete();
+            }
         });
 
         await interaction.followUp('完了しました');

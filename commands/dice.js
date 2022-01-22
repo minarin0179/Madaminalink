@@ -19,15 +19,9 @@ module.exports = {
     need_admin: false,
 
     async execute(interaction) {
-        // データを取得
+        // x=1 y=100 -> 1d100
         const x = interaction.options.getNumber('ダイスの数');
         const y = interaction.options.getNumber('ダイスの面数');
-
-        // ボタンを作成
-        const button = new Discord.MessageButton()
-            .setCustomId(`diceroll;${x},${y}`)
-            .setStyle('PRIMARY')
-            .setLabel(`${interaction.options.getNumber('ダイスの数')} d ${interaction.options.getNumber('ダイスの面数')}`);
 
         // 例外処理
         if (x < 1 || x > 100 || y < 2 || y > 10000) {
@@ -35,7 +29,11 @@ module.exports = {
             return;
         }
 
-        // ボタンを送信
+        const button = new Discord.MessageButton()
+            .setCustomId(`diceroll;${x},${y}`)
+            .setStyle('PRIMARY')
+            .setLabel(`${x} d ${y}`);
+
         await interaction.channel.send({
             content: 'ボタンをクリックしてダイスロール🎲!',
             components: [new Discord.MessageActionRow().addComponents(button)],
