@@ -19,7 +19,7 @@ module.exports = {
             await this.sendButton(role, interaction.channel);
         }));*/
 
-        for await (const [, role] of spectator_roles.sort((roleA, roleB) => roleB.rawPosition - roleA.rawPosition)) {
+        for await (const role of spectator_roles.sort((roleA, roleB) => roleB.rawPosition - roleA.rawPosition).values()) {
             await this.sendButton(role, interaction.channel);
         }
 

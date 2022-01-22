@@ -25,7 +25,7 @@ module.exports = {
 
         else if (target_ch.type === 'GUILD_CATEGORY') {
             // childrenで取得すると[key,value]の形になる
-            for await (const [, channel] of target_ch.children) {
+            for await (const channel of target_ch.children.values()) {
                 await channel.clone();
                 await channel.delete();
             }

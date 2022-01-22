@@ -15,19 +15,22 @@ module.exports = {
         // dの前後で区切る
         const args = figure.split('d').map(num => Number(num));
 
+        const x = args[0];
+        const y = args[1];
+
         // 例外処理
-        if (args[0] < 1 || args[0] > 100 || args[1] < 2 || args[1] > 10000) {
+        if (x < 1 || x > 100 || y < 2 || y > 10000) {
             return '不正な値です ダイスの数は1~100 ダイスの面数は2~10000で指定してください';
         }
 
         // ダイスの数が1の時
-        if (args[0] == 1) {
-            return figure + ' → ' + this.getRandomInt(args[1]);
+        if (x == 1) {
+            return figure + ' → ' + this.getRandomInt(y);
         }
 
         // ダイスの数が複数の時
-        const result = [...Array(args[0])].map(() => this.getRandomInt(args[1]));
-        return `${figure} → [${result}] → ${result.reduce((a, x) => a + x)}`;
+        const result = [...Array(x)].map(() => this.getRandomInt(y));
+        return `${figure} → [${result}] → ${result.reduce((a, b) => a + b)}`;
     },
 
     // 整数の乱数発生機

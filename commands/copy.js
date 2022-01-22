@@ -31,7 +31,7 @@ module.exports = {
 
             const channels = original_ch.children.sort((chA, chB) => chA.position - chB.position);
 
-            for await (const [, channel] of channels) {
+            for await (const channel of channels.values()) {
                 await this.duplicate_ch(channel, new_category);
             }
         }
@@ -54,7 +54,7 @@ module.exports = {
         if (original_ch.type != 'GUILD_TEXT') return;
 
         const messages = (await original_ch.messages.fetch()).reverse();
-        for await (const [, message] of messages) {
+        for await (const message of messages.values()) {
             const content = message.content;
 
             const new_msg = {
