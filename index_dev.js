@@ -17,6 +17,14 @@ commandFiles.forEach(file => {
     const command = require(`./commands/${file}`);
     commands[command.data.name] = command;
 });
+
+
+const command_dev_Files = fs.readdirSync('./commands_dev').filter(file => file.endsWith('.js'));
+command_dev_Files.forEach(file => {
+    const command = require(`./commands_dev/${file}`);
+    commands[command.data.name] = command;
+});
+
 // ボタンを取得
 const buttons = {};
 const buttonFiles = fs.readdirSync('./buttons').filter(file => file.endsWith('.js'));
@@ -26,7 +34,7 @@ buttonFiles.forEach(file => {
 });
 
 // その他の処理を取得
-const remind = require('./remind.js');
+const remind = require('./send_remind.js');
 const welcome = require('./welcome.js');
 
 // サーバー参加時の処理
@@ -37,7 +45,8 @@ client.on('guildCreate', async (new_guild) => {
 client.once('ready', async () => {
     // スラッシュコマンドをサーバーに登録
     const datas = Object.keys(commands).map(key => commands[key].data);
-    await client.application.commands.set(datas, '926052259069059102');
+    await client.application.commands.set(datas, '934488067442622524');
+    await client.application.commands.set(datas);
     console.log('Ready!');
 });
 
@@ -82,7 +91,7 @@ client.on('interactionCreate', async (interaction) => {
         await command.execute(interaction);
     }
     catch (error) {
-        console.log(interaction.commandName, error);
+        console.log(error);
         interaction.replied || interaction.deferred
             ? await interaction.followUp({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true })
             : await interaction.reply({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true });
