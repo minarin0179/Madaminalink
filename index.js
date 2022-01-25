@@ -17,7 +17,6 @@ commandFiles.forEach(file => {
     const command = require(`./commands/${file}`);
     commands[command.data.name] = command;
 });
-
 // ボタンを取得
 const buttons = {};
 const buttonFiles = fs.readdirSync('./buttons').filter(file => file.endsWith('.js'));
@@ -53,7 +52,7 @@ client.on('interactionCreate', async (interaction) => {
             await button.execute(interaction);
         }
         catch (err) {
-            console.log(id, err);
+            console.log(id.substring(0, id.indexOf(';')));
             interaction.replied || interaction.deferred
                 ? await interaction.followUp({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true })
                 : await interaction.reply({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true });
