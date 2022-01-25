@@ -29,13 +29,13 @@ module.exports = {
 
         // ボタンを作成
         const button = new Discord.MessageButton()
-            .setCustomId(`open;${target_role.id},${target_ch.id}`)
+            .setCustomId(`open;${target_role.id}`)
             .setStyle('PRIMARY')
             .setLabel('公開');
 
         // ボタンを送信
-        await interaction.channel.send({
-            content: `ボタンを押すことでこのチャンネルが${target_role}に対して公開されます`,
+        await target_ch.send({
+            content: `ボタンを押すと、このチャンネルが${target_role}に対して公開されます`,
             components: [new Discord.MessageActionRow().addComponents(button)],
         });
 

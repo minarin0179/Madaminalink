@@ -4,9 +4,9 @@ module.exports = {
     async execute(interaction) {
 
         const customId = interaction.customId;
-        const options = customId.substr(customId.indexOf(';') + 1).split(',');
-        const target_mentionable = await interaction.guild.roles.fetch(options[0]) || await interaction.guild.members.fetch(options[0]);
-        const target_channel = await interaction.guild.channels.fetch(options[1]);
+        const option = customId.substr(customId.indexOf(';') + 1);
+        const target_mentionable = await interaction.guild.roles.fetch(option) || await interaction.guild.members.fetch(option);
+        const target_channel = interaction.channel;
 
         // チャンネルを閲覧可能にする
         await target_channel.permissionOverwrites.create(target_mentionable, { VIEW_CHANNEL: true });

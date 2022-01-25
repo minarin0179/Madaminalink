@@ -33,13 +33,15 @@ module.exports = {
         // カテゴリー名を変更
         await category.setName(`(ログ ${year}/${month}/${date}) ${category.name}`);
 
-        const perm = {};
+        const perm = category.permissionOverwrites;
 
         // everyoneから見えなくする
-        perm.create([{
-            id: interaction.guild.roles.everyone.id,
-            deny: ['VIEW_CHANNEL', 'SEND_MESSAGES'],
-        }]);
+        await category.permissionOverwrites.set([
+            {
+                id: interaction.guild.roles.everyone.id,
+                deny: ['VIEW_CHANNEL', 'SEND_MESSAGES'],
+            },
+        ]);
 
         // 観戦ロールが指定されていたら見えるようにする
         const spectator = interaction.options.getRole('spectator');
@@ -49,8 +51,6 @@ module.exports = {
                 SEND_MESSAGES: false,
             });
         }
-
-        await category.permissionOverwrites.set(perm.cache);
 
         await category.children.forEach(async (channel) => {
             if (channel.type === 'GUILD_TEXT') {
