@@ -1,3 +1,5 @@
+const { Util: { splitMessage } } = require("discord.js");
+
 module.exports = {
     data: {
         name: 'copy',
@@ -16,10 +18,11 @@ module.exports = {
         // 応答時間の制限を15分に
         await interaction.deferReply({ ephemeral: true });
 
+        let error = false;
         const original_ch = interaction.options.getChannel('テキストチャンネルまたはカテゴリー') || interaction.channel;
 
         if (original_ch.type === 'GUILD_TEXT') {
-            await this.duplicate_ch(original_ch, original_ch.parent);
+            await this.duplicate_ch(original_ch, original_ch.parent).catch(() => { error = true; });
         }
 
         else if (original_ch.type === 'GUILD_CATEGORY') {
@@ -32,11 +35,15 @@ module.exports = {
             const channels = original_ch.children.sort((chA, chB) => chA.position - chB.position);
 
             for await (const channel of channels.values()) {
-                await this.duplicate_ch(channel, new_category);
+                await this.duplicate_ch(channel, new_category).catch(() => { error = true; });
             }
         }
-
-        await interaction.followUp({ content: `「${original_ch.name}」は正常にコピーされました`, ephemeral: true });
+        if (error) {
+            await interaction.followUp({ content: `「${original_ch.name}」のコピーに失敗しました`, ephemeral: true });
+        }
+        else {
+            await interaction.followUp({ content: `「${original_ch.name}」のコピーは正常に完了しました`, ephemeral: true });
+        }
     },
 
 
@@ -58,17 +65,29 @@ module.exports = {
             const content = message.content;
 
             const new_msg = {
-                files: message.attachments.map(attachment => attachment.url),
+                files: await message.attachments.map(attachment => attachment.url),
                 components: message.components,
-                embeds: message.embeds,
+                embeds: await message.embeds,
             };
 
-            if (content.length > 0) {
-                new_msg.content = message.content;
+            if (content.length > 2000) {
+                for await (const m of splitMessage(content)) {
+                    await new_ch.send(m).catch(() => { throw new Error(); });
+                }
+                if (new_msg.files.length > 0) {
+                    await new_ch.send(new_msg).catch(() => { throw new Error(); });
+                }
+                continue;
             }
 
-            await new_ch.send(new_msg);
+            else if (content.length > 0) {
+                new_msg.content = content;
+            }
 
+            await new_ch.send(new_msg).catch((err) => {
+                new_ch.send('```diff\n- メッセージのコピーに失敗しました\n- ファイルサイズの上限は8MBまでです\n```');
+                throw new Error();
+            });
         }
 
     },

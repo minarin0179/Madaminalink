@@ -20,7 +20,7 @@ module.exports = {
 
         // 必要なデータを取得
         const role = await interaction.options.getRole('role');
-        const members = await role.members;
+        const members = await role.members.filter(member => member.nickname);
         const myrole = interaction.guild.me.roles.highest;
 
         // 上位のロールに対してはスルー
@@ -29,13 +29,17 @@ module.exports = {
             return;
         }
 
+        const admin_member = [];
+
         // ニックネームをリセット
         await Promise.all(members.map(async (member) => {
-            // 管理者に対しては実行しない
-            if (member.permissions.has('ADMINISTRATOR')) return;
-            await member.setNickname(null).catch(() => console.log(member.user.username));
+            await member.setNickname(null).catch(() => admin_member.push(member.nickname));
         }));
 
         await interaction.followUp({ content: 'ニックネームのリセットが完了しました', ephemeral: true });
+
+        if (admin_member.length > 0) {
+            await interaction.followUp({ content: `下記のユーザーのニックネームは変更できませんでした \n${admin_member}`, ephemeral: true });
+        }
     },
 };
