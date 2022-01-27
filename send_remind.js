@@ -1,23 +1,4 @@
-const Discord = require('discord.js');
-const mysql = require('mysql');
-
-
-const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'Meikoudai2021!',
-    database: 'Madaminalink',
-});
-
-
-connection.connect((err) => {
-    if (err) {
-        console.log('error connecting: ' + err.stack);
-        return;
-    }
-    console.log('success');
-});
-
+const { connection } = require('./sql.js');
 module.exports = {
     async execute(client) {
         connection.query('SELECT * FROM reminds WHERE datetime < now()', function (error, results, fields) {

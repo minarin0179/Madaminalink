@@ -4,3 +4,7 @@ node_modules/*
 *.json
 announce.js
 sql.js
+send_remind.js
+commands_dev/*
+index_dev.js
+index_sub.js
