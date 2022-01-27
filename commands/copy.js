@@ -1,4 +1,4 @@
-const { Util: { splitMessage } } = require("discord.js");
+const { Util: { splitMessage } } = require('discord.js');
 
 module.exports = {
     data: {
@@ -50,6 +50,8 @@ module.exports = {
     // チャンネルを複製
     async duplicate_ch(original_ch, parent) {
 
+        original_ch.messages.cache.clear();
+
         const new_ch =
             await original_ch.guild.channels.create(original_ch.name, {
                 type: original_ch.type,
@@ -64,7 +66,7 @@ module.exports = {
         for await (const message of messages.values()) {
             const content = message.content;
 
-            const new_msg = {
+            const msg_temp = {
                 files: await message.attachments.map(attachment => attachment.url),
                 components: message.components,
                 embeds: await message.embeds,
@@ -74,21 +76,26 @@ module.exports = {
                 for await (const m of splitMessage(content)) {
                     await new_ch.send(m).catch(() => { throw new Error(); });
                 }
-                if (new_msg.files.length > 0) {
-                    await new_ch.send(new_msg).catch(() => { throw new Error(); });
+                if (msg_temp.files.length > 0) {
+                    await new_ch.send(msg_temp).catch();
                 }
                 continue;
             }
 
             else if (content.length > 0) {
-                new_msg.content = content;
+                msg_temp.content = content;
             }
 
-            await new_ch.send(new_msg).catch((err) => {
+            const new_msg = await new_ch.send(msg_temp).catch(() => {
                 new_ch.send('```diff\n- メッセージのコピーに失敗しました\n- ファイルサイズの上限は8MBまでです\n```');
                 throw new Error();
             });
-        }
 
+            const reactions = message.reactions.cache.keys();
+
+            for (const reaction of reactions) {
+                new_msg.react(reaction);
+            }
+        }
     },
 };

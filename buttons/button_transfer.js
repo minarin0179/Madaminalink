@@ -1,7 +1,10 @@
+const { Util: { splitMessage } } = require('discord.js');
+
 module.exports = {
     customId: 'transfer',
 
     async execute(interaction) {
+        await interaction.deferReply({ ephemeral: true });
 
         const customId = interaction.customId;
         const target_ch_id = customId.substr(customId.indexOf(';') + 1);
@@ -10,7 +13,7 @@ module.exports = {
 
         // もしチャンネルが見つからない or 削除済み
         if (target_ch == undefined) {
-            interaction.reply({ content: 'メッセージを送信できませんでした。\nチャンネルが削除済みの可能性があります', ephemeral: true });
+            interaction.followUp({ content: 'メッセージを送信できませんでした。\nチャンネルが削除済みの可能性があります', ephemeral: true });
             return;
         }
 
@@ -19,22 +22,28 @@ module.exports = {
         // メッセージにつけられたリアクションを取得
         const command_msg = await interaction.message.fetch();
         const reactions = command_msg.reactions.cache;
+        let error = false;
 
         interaction.channel.messages.cache.clear();
         const messages = (await interaction.channel.messages.fetch()).reverse();
         messages.delete(interaction.message.id);
 
-        await Promise.all(messages.map(msg => {
+        await Promise.all(messages.map(async msg => {
             const keys = msg.reactions.cache.keys();
             if (Array.from(keys).some(key => reactions.has(key))) {
-                this.send_message(target_ch, msg);
+                await this.send_message(target_ch, msg).catch(() => error = true);
             }
         }));
 
-        await interaction.reply({ content: 'メッセージの転送が完了しました', ephemeral: true });
+        if (error) {
+            await interaction.followUp({ content: 'メッセージの転送に失敗しました', ephemeral: true });
+        }
+        else {
+            await interaction.followUp({ content: 'メッセージの転送が完了しました', ephemeral: true });
+        }
 
     },
-    send_message(target_ch, message) {
+    async send_message(target_ch, message) {
 
         const content = message.content;
 
@@ -44,9 +53,24 @@ module.exports = {
             embeds: message.embeds,
         };
 
-        if (content.length > 0) {
-            new_msg.content = message.content;
+        if (content.length > 2000) {
+            for await (const m of splitMessage(content)) {
+                await target_ch.send(m).catch(() => { throw new Error(); });
+            }
+            if (new_msg.files.length > 0) {
+                await target_ch.send(new_msg).catch();
+            }
+            return;
         }
+
+        else if (content.length > 0) {
+            new_msg.content = content;
+        }
+
+        await target_ch.send(new_msg).catch(() => {
+            target_ch.send('```diff\n- メッセージの転送に失敗しました\n- ファイルサイズの上限は8MBまでです\n```');
+            throw new Error();
+        });
 
         target_ch.send(new_msg);
     },
