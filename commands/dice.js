@@ -34,6 +34,7 @@ module.exports = {
             .setStyle('PRIMARY')
             .setLabel(`${x} d ${y}`);
 
+
         await interaction.channel.send({
             content: 'ボタンをクリックしてダイスロール🎲!',
             components: [new Discord.MessageActionRow().addComponents(button)],
