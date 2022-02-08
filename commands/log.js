@@ -24,15 +24,6 @@ module.exports = {
         // カテゴリーを取得
         const category = interaction.options.getChannel('category');
 
-        // 日付を取得
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth() + 1;
-        const date = today.getDate();
-
-        // カテゴリー名を変更
-        await category.setName(`(ログ ${year}/${month}/${date}) ${category.name}`);
-
         const perm = category.permissionOverwrites;
 
         // everyoneから見えなくする
@@ -52,14 +43,30 @@ module.exports = {
             });
         }
 
-        await category.children.forEach(async (channel) => {
+        let last_timestamp = 0;
+
+        await Promise.all(category.children.map(async channel=>{
             if (channel.type === 'GUILD_TEXT') {
                 await channel.permissionOverwrites.set(perm.cache);
+
+                await channel.messages.fetch(channel.lastMessageId)
+                    .then(msg => {
+                        last_timestamp = Math.max(last_timestamp, msg.createdTimestamp);
+                    }).catch();
             }
             else {
-                channel.delete();
+                await channel.delete();
             }
-        });
+        }));
+
+        // 日付を取得
+        const today = new Date(last_timestamp);
+        const year = today.getFullYear();
+        const month = today.getMonth() + 1;
+        const date = today.getDate();
+
+        // カテゴリー名を変更
+        await category.setName(`(ログ ${year}/${month}/${date}) ${category.name}`);
 
         await interaction.followUp('完了しました');
     },
