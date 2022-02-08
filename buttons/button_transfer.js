@@ -32,6 +32,7 @@ module.exports = {
             const keys = msg.reactions.cache.keys();
             if (Array.from(keys).some(key => reactions.has(key))) {
                 await this.send_message(target_ch, msg).catch(() => error = true);
+                return;
             }
         }));
 
@@ -60,18 +61,16 @@ module.exports = {
             if (new_msg.files.length > 0) {
                 await target_ch.send(new_msg).catch();
             }
-            return;
         }
+        else {
+            if (content.length > 0) {
+                new_msg.content = content;
+            }
 
-        else if (content.length > 0) {
-            new_msg.content = content;
+            await target_ch.send(new_msg).catch(() => {
+                target_ch.send('```diff\n- メッセージの転送に失敗しました\n- ファイルサイズの上限は8MBまでです\n```');
+                throw new Error();
+            });
         }
-
-        await target_ch.send(new_msg).catch(() => {
-            target_ch.send('```diff\n- メッセージの転送に失敗しました\n- ファイルサイズの上限は8MBまでです\n```');
-            throw new Error();
-        });
-
-        target_ch.send(new_msg);
     },
 };

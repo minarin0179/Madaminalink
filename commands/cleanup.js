@@ -20,15 +20,14 @@ module.exports = {
             await target_ch.clone();
             await target_ch.delete();
             await interaction.reply({ content: `テキストチャンネル「${target_ch.name}」のメッセージを削除しました`, ephemeral: true });
-            return;
         }
-
         else if (target_ch.type === 'GUILD_CATEGORY') {
-            // childrenで取得すると[key,value]の形になる
-            for await (const channel of target_ch.children.values()) {
+
+            Promise.all(target_ch.children.map(async channel => {
                 await channel.clone();
                 await channel.delete();
-            }
+            }));
+
             await interaction.reply({ content: `カテゴリ「${target_ch.name}」内のすべてのチャンネルのメッセージを削除しました`, ephemeral: true });
         }
     },
