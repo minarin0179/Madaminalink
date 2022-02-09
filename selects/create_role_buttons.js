@@ -5,10 +5,12 @@ module.exports = {
 
     async execute(interaction) {
 
+        await interaction.deferReply({ ephemeral: true });
         const values = interaction.values;
 
         await Promise.all(values.map(async role_id => {
             const role = await interaction.guild.roles.fetch(role_id);
+            if (role == null) return;
 
             // ボタンを送信
             await interaction.channel.send({
@@ -17,8 +19,7 @@ module.exports = {
             });
         }));
 
-        interaction.reply({ content: 'ボタンを作成しました', ephemeral: true });
-        interaction.deleteReply();
+        interaction.followUp({ content: 'ボタンを作成しました', ephemeral: true });
     },
 };
 
