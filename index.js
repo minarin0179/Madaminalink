@@ -1,6 +1,5 @@
 // モジュール読み込み\
 const { Client, Intents } = require('discord.js');
-const fs = require('fs');
 const cron = require('node-cron');
 const dotenv = require('dotenv');
 
@@ -10,24 +9,12 @@ dotenv.config();
 // クライアントを作成
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS] });
 
-// コマンドを取得
-const commands = {};
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-commandFiles.forEach(file => {
-    const command = require(`./commands/${file}`);
-    commands[command.data.name] = command;
-});
-// ボタンを取得
-const buttons = {};
-const buttonFiles = fs.readdirSync('./buttons').filter(file => file.endsWith('.js'));
-buttonFiles.forEach(file => {
-    const button = require(`./buttons/${file}`);
-    buttons[button.customId] = button;
-});
-
 // その他の処理を取得
-const remind = require('./remind.js');
+const remind = require('./send_remind.js');
 const welcome = require('./welcome.js');
+const buttons = require('./buttons.js');
+const commands = require('./commands.js');
+const selects = require('./selects.js');
 
 // サーバー参加時の処理
 client.on('guildCreate', async (new_guild) => {
@@ -35,63 +22,24 @@ client.on('guildCreate', async (new_guild) => {
 });
 
 client.once('ready', async () => {
-    // スラッシュコマンドをサーバーに登録
-    const datas = Object.keys(commands).map(key => commands[key].data);
-    await client.application.commands.set(datas);
+    await commands.set(client).catch(console.log);
     console.log('Ready!');
 });
 
 client.on('interactionCreate', async (interaction) => {
-    // ボタンの処理
     if (interaction.isButton()) {
-        const id = interaction.customId;
-        const button = buttons[(id.indexOf(';') == -1) ? id : id.substring(0, id.indexOf(';'))];
-        // アプデ後はこちらに移行 const button = buttons[id.substring(0, id.indexOf(';'))];
-
-        try {
-            await button.execute(interaction);
-        }
-        catch (err) {
-            console.log(id.substring(0, id.indexOf(';')));
-            interaction.replied || interaction.deferred
-                ? await interaction.followUp({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true })
-                : await interaction.reply({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true });
-        }
-        return;
+        buttons.pressed(interaction).catch(console.log);
     }
-
-    // コマンドやボタン以外は無視
-    if (!interaction.isCommand()) return;
-
-    // コマンドを取得
-    const command = commands[interaction.commandName];
-
-    if (command === undefined) {
-        await interaction.reply({ content: 'このコマンドは存在しません', ephemeral: true });
-        return;
+    else if (interaction.isCommand()) {
+        commands.entered(interaction).catch(console.log);
     }
-
-    // 管理者権限が必要なコマンドか判断
-    if (command.need_admin && !interaction.member.permissions.has('ADMINISTRATOR')) {
-        await interaction.reply({ content: 'このコマンドを実行する権限がありません', ephemeral: true });
-        return;
-    }
-
-    // コマンドを実行
-    try {
-        await command.execute(interaction);
-    }
-    catch (error) {
-        console.log(interaction.commandName, error);
-        interaction.replied || interaction.deferred
-            ? await interaction.followUp({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true })
-            : await interaction.reply({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true });
+    else if (interaction.isSelectMenu()) {
+        selects.selected(interaction).catch(console.log);
     }
 });
 
 cron.schedule('* * * * *', () => {
-    // リマインダーの確認と送信
-    remind.execute(client);
+    remind.execute(client).catch(console.log);
 });
 
 client.login(process.env.DISCORD_TOKEN);
