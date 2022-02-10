@@ -1,4 +1,7 @@
-const { connection } = require('./sql.js');
+const { connection, key } = require('./sql.js');
+const crypto = require('crypto-js');
+
+
 module.exports = {
     async execute(client) {
         connection.query('SELECT * FROM reminds WHERE datetime < now()', function (error, results) {
@@ -7,7 +10,8 @@ module.exports = {
 
                 // remindの送信
                 client.channels.fetch(res.destination_id).then(destination_ch => {
-                    destination_ch.send(res.message);
+                    const bytes = crypto.AES.decrypt(res.message, key);
+                    destination_ch.send(bytes.toString(crypto.enc.Utf8));
                 }).catch(async () => {
                     client.users.fetch(res.author_id).then(author => {
                         author.send(`リマインドが正しく送信されませんでした。チャンネルが削除されていた可能性があります。\n送信されなかったメッセージ「${res.message}」`);

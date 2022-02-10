@@ -6,3 +6,5 @@ commands_dev/*
 index_dev.js
 index_sub1.js
 index_sub2.js
+sql.js
+send_remind.js

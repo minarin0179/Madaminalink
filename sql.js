@@ -13,4 +13,5 @@ connection.connect((err) => {
 
 module.exports = {
     connection: connection,
+    key: options.key,
 };

@@ -38,7 +38,7 @@ client.on('interactionCreate', async (interaction) => {
     }
 });
 
-cron.schedule('* * * * *', () => {
+cron.schedule('5 * * * * *', () => {
     remind.execute(client).catch(console.log);
 });
 
