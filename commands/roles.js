@@ -11,20 +11,31 @@ module.exports = {
 
         const guild = interaction.guild;
 
-
-        await interaction.followUp({
-            content: 'ボタンを作成するロールを選択してください',
-            components: buildComponents(guild),
-            ephemeral: true,
-        });
+        const roles_all = [...guild.roles.cache.sort((roleA, roleB) => roleB.position - roleA.position).values()].map(e => [e, false]);
+        send_selectmenu(interaction, roles_all);
     },
 };
 
-function buildComponents(guild) {
-    const roles_all = [...guild.roles.cache.sort((roleA, roleB) => roleB.position - roleA.position).values()].map(e => [e, false]);
-    const roles_sliced = slice_array(roles_all, 25);
+async function send_selectmenu(interaction, data_all) {
 
-    return roles_sliced.map((roles, index) => buildComponent(roles, index));
+    const datas_first_sliced = slice_array(data_all, 125);
+
+    Promise.all(datas_first_sliced.map(async (data_first_sliced, index) => {
+        await interaction.followUp({
+            content: 'ボタンを作成するロールを選択してください',
+            components: buildComponents(data_first_sliced, index),
+            ephemeral: true,
+        });
+
+    }));
+
+
+}
+
+function buildComponents(data_first_sliced, index) {
+    const data_second_sliced = slice_array(data_first_sliced, 25);
+
+    return data_second_sliced.map((roles, index_child) => buildComponent(roles, index * 5 + index_child));
 }
 
 function buildComponent(roles, index) {
