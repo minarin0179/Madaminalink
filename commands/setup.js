@@ -35,14 +35,17 @@ module.exports = {
         // 応答時間の制限を15分に
         await interaction.deferReply({ ephemeral: true });
 
-        // シナリオ名を取得
-        const title = interaction.options.getString('シナリオ名');
-        // 送信するサーバーを取得
         const guild = interaction.guild;
-        // everyoneロールを取得
         const everyoneRole = guild.roles.everyone;
-
+        const title = interaction.options.getString('シナリオ名');
+        const num_players = interaction.options.getNumber('プレイヤーの数');
+        const num_secVC = interaction.options.getNumber('密談チャンネル数');
         const role_pos = (interaction.options.getRole('ロールを作成する位置') || everyoneRole).position;
+
+        if (num_players + num_secVC + 5 > 50) {
+            await interaction.followUp('プレイヤーの数もしくは密談チャンネルの数が多すぎます\n数を減らして再度お試しください');
+            return;
+        }
 
         // GMロールを作成
         const role_GM = await guild.roles.create({ name: `${title}_GM`, position: role_pos });
@@ -93,7 +96,7 @@ module.exports = {
         });
 
         // 共通情報チャンネル
-        await guild.channels.create('共通情報（書き込み不可）', {
+        await guild.channels.create('共通情報', {
             type: 'GUILD_TEXT',
             parent: new_category,
             permissionOverwrites: [{
@@ -133,7 +136,7 @@ module.exports = {
         });
 
         // 個別チャンネル
-        for (let i = 0; i < interaction.options.getNumber('プレイヤーの数'); i++) {
+        for (let i = 0; i < num_players; i++) {
             const individual_ch = await guild.channels.create(`個別ch${i + 1}`, {
                 type: 'GUILD_TEXT',
                 parent: new_category,
@@ -208,7 +211,7 @@ module.exports = {
         });
 
         // 密談チャンネル
-        for (let i = 0; i < interaction.options.getNumber('密談チャンネル数'); i++) {
+        for (let i = 0; i < num_secVC; i++) {
             await guild.channels.create(`密談場所${i + 1}`, {
                 type: 'GUILD_VOICE',
                 parent: new_category,
