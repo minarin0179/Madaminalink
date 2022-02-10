@@ -19,7 +19,7 @@ module.exports = {
             await button.execute(interaction);
         }
         catch (err) {
-            console.log(id.substring(0, id.indexOf(';')));
+            console.log(err);
             interaction.replied || interaction.deferred
                 ? await interaction.followUp({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true })
                 : await interaction.reply({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true });
