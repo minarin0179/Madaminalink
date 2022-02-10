@@ -1,4 +1,4 @@
-const { Util: { splitMessage } } = require('discord.js');
+const { Util: { splitMessage }, Collection } = require('discord.js');
 
 module.exports = {
     customId: 'transfer',
@@ -25,7 +25,8 @@ module.exports = {
         let error = false;
 
         interaction.channel.messages.cache.clear();
-        const messages = (await interaction.channel.messages.fetch()).reverse();
+        const messages = (await fetch_all_messages(interaction.channel)).reverse();
+
         messages.delete(interaction.message.id);
 
         await Promise.all(messages.map(async msg => {
@@ -74,3 +75,26 @@ module.exports = {
         }
     },
 };
+
+async function fetch_all_messages(channel) {
+    let sum_messages = new Collection();
+    let last_id;
+
+    while (true) {
+        const options = { limit: 100 };
+        if (last_id) {
+            options.before = last_id;
+        }
+
+        const messages = await channel.messages.fetch(options);
+        sum_messages = sum_messages.concat(messages);
+
+        if (messages.size != 100) {
+            break;
+        }
+
+        last_id = messages.last().id;
+    }
+
+    return sum_messages;
+}
