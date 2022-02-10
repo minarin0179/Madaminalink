@@ -7,29 +7,21 @@ module.exports = {
         Promise.all(guilds.map(async guild => (await guild.fetch()).ownerId == new_guild.ownerId))
             .then(bits => guilds.filter(() => bits.shift()))
             .then(owner_guilds => {
-                if (owner_guilds.size == 1) {
+                if (owner_guilds.size >= 1) {
                     owner.send(`
 この度はマダミナリンクをご利用いただきありがとうございます。
-利用方法は以下のnoteにてご案内させていただいています。
-https://note.com/minarin0179/n/nc45141d0e1f3
-またマダミナリンクを利用しているサーバーの管理者に向けてDMにてアップデートやメンテナンスの情報を配信を行っています。
-メッセージの受け取りを希望されない場合はマダミナリンクからのメッセージをミュートしていただければ幸いです。
-その他のご意見ご要望や不具合の報告等がありましたら製作者の「みなりん#0471」までご連絡下さい。
-                `);
-                }
-                else if (owner_guilds.size >= 5) {
-                    owner.send(`
-あなたは現在${owner_guilds.size}個のサーバーにてマダミナリンクをご利用中です。
-${owner_guilds.map(guild => `「${guild.name}」`)}
-平素より多くのサーバーにてマダミナリンクをご利用いただきありがとうございます。
-もしあまり利用していないサーバーがありましたら負荷軽減のためキックしていただけると幸いです。
-                `);
+利用方法については以下のnoteを参照する または /helpをご利用下さい。
+note : https://note.com/minarin0179/n/n3f86accd8fea
+新機能やアップデートについての情報はサポートサーバーにてご案内しております。
+もしよろしければこちらにもご参加下さい。
+招待URL : https://discord.gg/6by68EJ3e7
+                `).catch(console.log);
                 }
                 else {
                     owner.send(`
 あなたは現在${owner_guilds.size}個のサーバーにてマダミナリンクをご利用中です。
 ${owner_guilds.map(guild => `「${guild.name}」`)}
-                `);
+                `).catch(console.log);
                 }
             });
     },

@@ -5,7 +5,7 @@ module.exports = {
         options: [{
             type: 'ROLE',
             name: 'role',
-            description: '置換前のロール',
+            description: 'ニックネームをリセットするロール',
             required: true,
         }],
     },
