@@ -25,7 +25,7 @@ module.exports = {
         const target_role = interaction.options.getMentionable('target');
         const target_ch = interaction.options.getChannel('channel') || interaction.channel;
 
-        await target_ch.permissionOverwrites.create(target_role, { VIEW_CHANNEL: false });
+        await target_ch.permissionOverwrites.edit(target_role, { VIEW_CHANNEL: false });
 
         // ボタンを作成
         const button = new Discord.MessageButton()
