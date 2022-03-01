@@ -24,7 +24,8 @@ module.exports = {
         // 埋め込みを作成
         const Embed = new Discord.MessageEmbed()
             .setColor('#0099ff')
-            .setTitle('転送するメッセージと同じリアクションを付けてください');
+            .setTitle('転送するメッセージと同じリアクションを付けてください')
+            .addField('転送先', destination.toString());
 
         // ボタンを作成
         const button = new Discord.MessageButton()

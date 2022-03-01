@@ -9,7 +9,7 @@ module.exports = {
         const target_channel = interaction.channel;
 
         // チャンネルを閲覧可能にする
-        await target_channel.permissionOverwrites.create(target_mentionable, { VIEW_CHANNEL: true });
+        await target_channel.permissionOverwrites.edit(target_mentionable, { VIEW_CHANNEL: true });
 
         // ボタンを削除
         interaction.message.delete();

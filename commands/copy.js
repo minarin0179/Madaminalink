@@ -7,8 +7,8 @@ module.exports = {
         options: [{
             type: 'CHANNEL',
             channelTypes: ['GUILD_TEXT', 'GUILD_CATEGORY'],
-            name: 'テキストチャンネルまたはカテゴリー',
-            description: 'コピーするチャンネル/カテゴリー',
+            name: '対象',
+            description: 'コピーするチャンネル または カテゴリー',
             required: false,
         }],
     },
@@ -19,7 +19,7 @@ module.exports = {
         await interaction.deferReply({ ephemeral: true });
 
         let error = false;
-        const original_ch = interaction.options.getChannel('テキストチャンネルまたはカテゴリー') || interaction.channel;
+        const original_ch = interaction.options.getChannel('対象') || interaction.channel;
 
         if (original_ch.type === 'GUILD_TEXT') {
             await duplicate_ch(original_ch, original_ch.parent).catch(() => { error = true; });
@@ -56,12 +56,19 @@ module.exports = {
 // チャンネルを複製
 async function duplicate_ch(original_ch, parent) {
 
-    const new_ch =
-        await original_ch.guild.channels.create(original_ch.name, {
-            type: original_ch.type,
-            parent: parent,
-            permissionOverwrites: original_ch.permissionOverwrites.cache,
-        });
+    const guild = original_ch.guild;
+
+    const new_ch = await original_ch.guild.channels.create(original_ch.name, {
+        type: original_ch.type,
+        parent: parent,
+        permissionOverwrites: [{
+            id: guild.roles.everyone.id,
+            deny: ['VIEW_CHANNEL'],
+        }, {
+            id: guild.me.id,
+            allow: ['VIEW_CHANNEL', 'SEND_MESSAGES'],
+        }],
+    });
 
     // ボイスチャンネル等はメッセージのコピーをしない
     if (original_ch.type != 'GUILD_TEXT') return;
@@ -71,6 +78,8 @@ async function duplicate_ch(original_ch, parent) {
     const messages = (await fetch_all_messages(original_ch)).reverse();
 
     for await (const message of messages.values()) {
+
+        new_ch.sendTyping();
 
         const content = message.content;
 
@@ -101,10 +110,11 @@ async function duplicate_ch(original_ch, parent) {
 
         const reactions = message.reactions.cache.keys();
 
-        for (const reaction of reactions) {
+        for await (const reaction of reactions) {
             new_msg.react(reaction);
         }
     }
+    await new_ch.permissionOverwrites.set(original_ch.permissionOverwrites.cache);
 }
 
 async function fetch_all_messages(channel) {
