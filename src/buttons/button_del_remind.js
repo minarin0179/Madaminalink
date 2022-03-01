@@ -1,4 +1,4 @@
-const { connection } = require('../sql.js');
+const { connection } = require('../modules/sql.js');
 
 module.exports = {
     customId: 'del_remind',

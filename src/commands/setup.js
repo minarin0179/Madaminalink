@@ -230,7 +230,7 @@ module.exports = {
                 id: role_SP.id,
                 allow: ['VIEW_CHANNEL'],
                 deny: ['SPEAK'],
-            }], 
+            }],
         });
 
         // 密談チャンネル

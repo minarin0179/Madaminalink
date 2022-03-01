@@ -10,11 +10,11 @@ dotenv.config();
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS] });
 
 // その他の処理を取得
-const remind = require('./send_remind.js');
-const welcome = require('./welcome.js');
-const buttons = require('./buttons.js');
-const commands = require('./commands.js');
-const selects = require('./selects.js');
+const remind = require('./modules/send_remind.js');
+const welcome = require('./modules/welcome.js');
+const buttons = require('./modules/buttons.js');
+const commands = require('./modules/commands.js');
+const selects = require('./modules/selects.js');
 
 // サーバー参加時の処理
 client.on('guildCreate', async (new_guild) => {

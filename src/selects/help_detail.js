@@ -1,4 +1,4 @@
-const data = require('../help_detail.json');
+const data = require('./help_detail.json');
 
 module.exports = {
     customId: 'help_detail',

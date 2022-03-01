@@ -1,7 +1,7 @@
 const crypto = require('crypto-js');
 
 const Discord = require('discord.js');
-const { connection, key } = require('../sql.js');
+const { connection, key } = require('../modules/sql.js');
 
 module.exports = {
     data: {

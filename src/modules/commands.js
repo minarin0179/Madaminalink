@@ -4,7 +4,7 @@ const fs = require('fs');
 const commands = {};
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 commandFiles.forEach(file => {
-    const command = require(`./commands/${file}`);
+    const command = require(`../commands/${file}`);
     commands[command.data.name] = command;
 });
 

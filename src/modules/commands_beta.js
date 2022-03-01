@@ -4,14 +4,14 @@ const fs = require('fs');
 const commands = {};
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 commandFiles.forEach(file => {
-    const command = require(`./commands/${file}`);
+    const command = require(`../commands/${file}`);
     commands[command.data.name] = command;
 });
 
 
 const command_dev_Files = fs.readdirSync('./commands_dev').filter(file => file.endsWith('.js'));
 command_dev_Files.forEach(file => {
-    const command = require(`./commands_dev/${file}`);
+    const command = require(`../commands_dev/${file}`);
     commands[command.data.name] = command;
 });
 
