@@ -35,8 +35,8 @@ module.exports = {
 
         // ロールを置換
         await Promise.all(interaction.options.getRole('before').members.map(async member => {
-            await member.roles.remove(before);
             await member.roles.add(after);
+            await member.roles.remove(before);
         }));
 
         await interaction.followUp({ content: 'ロールの移行が完了しました', ephemeral: true });

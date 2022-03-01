@@ -20,8 +20,10 @@ module.exports = {
         // スラッシュコマンドをサーバーに登録
         const datas = Object.keys(commands).map(key => commands[key].data);
         await client.application.commands.set(datas);
+        // 製作委員会
         await client.application.commands.set(datas, '929332317518983178');
-        await client.application.commands.set(datas, '926052259069059102');
+        // 検証用
+        await client.application.commands.set(datas, '946046708587036702');
     },
     async entered(interaction) {
         // コマンドを取得
@@ -44,9 +46,21 @@ module.exports = {
         }
         catch (error) {
             console.log(error);
-            interaction.replied || interaction.deferred
-                ? await interaction.followUp({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true })
-                : await interaction.reply({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true });
+            if (error.code == 50001) {
+                return_err_msg(interaction, 'マダミナリンクにはこのカテゴリまたはチャンネルの閲覧権限がありません');
+            }
+            else if (error.code == 50013) {
+                return_err_msg(interaction, 'マダミナリンクに十分な権限がありません');
+            }
+            else {
+                return_err_msg(interaction, '予期せぬエラーが発生しました。管理者に報告してください。');
+            }
         }
     },
+};
+
+const return_err_msg = async (interaction, err_msg) => {
+    interaction.replied || interaction.deferred
+        ? await interaction.followUp({ content: err_msg, ephemeral: true })
+        : await interaction.reply({ content: err_msg, ephemeral: true });
 };

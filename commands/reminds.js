@@ -78,6 +78,9 @@ module.exports = {
                 permissionOverwrites: [{
                     id: guild.roles.everyone.id,
                     deny: ['VIEW_CHANNEL'],
+                }, {
+                    id: guild.me.id,
+                    allow: ['VIEW_CHANNEL'],
                 }],
             });
 

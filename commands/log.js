@@ -4,50 +4,48 @@ module.exports = {
         description: 'カテゴリをログとして保存します',
         options: [{
             type: 'CHANNEL',
-            name: 'category',
+            name: 'ログにするカテゴリ',
             channelTypes: ['GUILD_CATEGORY'],
             description: '保存するカテゴリ',
             required: true,
         }, {
             type: 'ROLE',
-            name: 'spectator',
-            description: '観戦者ロール',
-            required: true,
+            name: '観戦ロール',
+            description: '指定したロールからは閲覧可能になります(指定しなかった場合は管理者のみ閲覧可)',
+            required: false,
         }],
     },
     need_admin: true,
 
     async execute(interaction) {
-        // 応答時間の制限を15分に
+
         await interaction.deferReply({ ephemeral: true });
 
-        // カテゴリーを取得
-        const category = interaction.options.getChannel('category');
+        const category = interaction.options.getChannel('ログにするカテゴリ');
+        const me = interaction.guild.me;
+        const spectator = interaction.options.getRole('観戦ロール');
+        let last_timestamp = 0;
 
-        const perm = category.permissionOverwrites;
-
-        // everyoneから見えなくする
         await category.permissionOverwrites.set([
             {
                 id: interaction.guild.roles.everyone.id,
-                deny: ['VIEW_CHANNEL', 'SEND_MESSAGES'],
+                deny: ['VIEW_CHANNEL'],
+            }, {
+                id: me.id,
+                allow: ['VIEW_CHANNEL'],
             },
         ]);
 
-        // 観戦ロールが指定されていたら見えるようにする
-        const spectator = interaction.options.getRole('spectator');
         if (spectator) {
-            await perm.create(spectator, {
+            await category.permissionOverwrites.create(spectator, {
                 VIEW_CHANNEL: true,
-                SEND_MESSAGES: false,
             });
         }
 
-        let last_timestamp = 0;
 
-        await Promise.all(category.children.map(async channel=>{
+        await Promise.all(category.children.map(async channel => {
             if (channel.type === 'GUILD_TEXT') {
-                await channel.permissionOverwrites.set(perm.cache);
+                await channel.lockPermissions();
 
                 await channel.messages.fetch(channel.lastMessageId)
                     .then(msg => {
@@ -60,7 +58,8 @@ module.exports = {
         }));
 
         // 日付を取得
-        const today = new Date(last_timestamp);
+        // const today = new Date(last_timestamp) || new Date();
+        const today = Number.isNaN(new Date(last_timestamp)) ? new Date(last_timestamp) : new Date();
         const year = today.getFullYear();
         const month = today.getMonth() + 1;
         const date = today.getDate();
@@ -68,6 +67,6 @@ module.exports = {
         // カテゴリー名を変更
         await category.setName(`(ログ ${year}/${month}/${date}) ${category.name}`);
 
-        await interaction.followUp('完了しました');
+        await interaction.followUp('ログの保存が完了しました');
     },
 };

@@ -56,11 +56,16 @@ module.exports = {
         // PLロールを作成
         const role_PL = await guild.roles.create({ name: `${title}_PL`, position: role_pos });
 
+        const me = await guild.me;
+
 
         // カテゴリーを作成
         const new_category = await guild.channels.create(title, {
             type: 'GUILD_CATEGORY',
             permissionOverwrites: [{
+                id: me.id,
+                allow: ['VIEW_CHANNEL'],
+            }, {
                 id: everyoneRole.id,
                 deny: ['VIEW_CHANNEL'],
             }, {
@@ -81,6 +86,9 @@ module.exports = {
             type: 'GUILD_TEXT',
             parent: new_category,
             permissionOverwrites: [{
+                id: me.id,
+                allow: ['VIEW_CHANNEL'],
+            }, {
                 id: everyoneRole.id,
                 deny: ['VIEW_CHANNEL'],
             }, {
@@ -100,6 +108,9 @@ module.exports = {
             type: 'GUILD_TEXT',
             parent: new_category,
             permissionOverwrites: [{
+                id: me.id,
+                allow: ['VIEW_CHANNEL'],
+            }, {
                 id: everyoneRole.id,
                 deny: ['VIEW_CHANNEL'],
             }, {
@@ -121,6 +132,9 @@ module.exports = {
             type: 'GUILD_TEXT',
             parent: new_category,
             permissionOverwrites: [{
+                id: me.id,
+                allow: ['VIEW_CHANNEL'],
+            }, {
                 id: everyoneRole.id,
                 deny: ['VIEW_CHANNEL'],
             }, {
@@ -141,6 +155,9 @@ module.exports = {
                 type: 'GUILD_TEXT',
                 parent: new_category,
                 permissionOverwrites: [{
+                    id: me.id,
+                    allow: ['VIEW_CHANNEL'],
+                }, {
                     id: everyoneRole.id,
                     deny: ['VIEW_CHANNEL'],
                 }, {
@@ -174,6 +191,9 @@ module.exports = {
             type: 'GUILD_TEXT',
             parent: new_category,
             permissionOverwrites: [{
+                id: me.id,
+                allow: ['VIEW_CHANNEL'],
+            }, {
                 id: everyoneRole.id,
                 deny: ['VIEW_CHANNEL'],
             }, {
@@ -195,6 +215,9 @@ module.exports = {
             type: 'GUILD_VOICE',
             parent: new_category,
             permissionOverwrites: [{
+                id: me.id,
+                allow: ['VIEW_CHANNEL', 'CONNECT', 'SPEAK'],
+            }, {
                 id: everyoneRole.id,
                 deny: ['VIEW_CHANNEL'],
             }, {
@@ -207,7 +230,7 @@ module.exports = {
                 id: role_SP.id,
                 allow: ['VIEW_CHANNEL'],
                 deny: ['SPEAK'],
-            }],
+            }], 
         });
 
         // 密談チャンネル
@@ -216,6 +239,9 @@ module.exports = {
                 type: 'GUILD_VOICE',
                 parent: new_category,
                 permissionOverwrites: [{
+                    id: me.id,
+                    allow: ['VIEW_CHANNEL'],
+                }, {
                     id: everyoneRole.id,
                     deny: ['VIEW_CHANNEL'],
                 }, {

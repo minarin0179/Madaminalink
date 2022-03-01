@@ -34,7 +34,7 @@ module.exports = {
         if (interaction.options.getBoolean('ロールの削除')) {
             delete_role_ids.forEach(async delete_role_id => {
                 const delete_role = await interaction.guild.roles.fetch(delete_role_id);
-                if (delete_role == everyoneRole) return;
+                if (delete_role == null || delete_role == everyoneRole) return;
                 delete_role.delete().catch(console.log);
             });
         }
