@@ -5,7 +5,6 @@ module.exports = {
 
     async execute(interaction) {
         const value = interaction.values[0];
-        console.log(value);
         interaction.reply({ content: data[value].content || data.undefined.content, ephemeral: true });
     },
 };

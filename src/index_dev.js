@@ -10,7 +10,7 @@ const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_
 
 // その他の処理を取得
 const welcome = require('./modules/welcome.js');
-// const buttons = require('./modules/buttons.js');
+const buttons = require('./modules/buttons.js');
 const commands = require('./modules/commands_beta.js');
 const selects = require('./modules/selects.js');
 
@@ -26,7 +26,7 @@ client.once('ready', async () => {
 
 client.on('interactionCreate', async (interaction) => {
     if (interaction.isButton()) {
-        // buttons.pressed(interaction).catch(console.log);
+        buttons.pressed(interaction).catch(console.log);
     }
     else if (interaction.isCommand()) {
         commands.entered(interaction).catch(console.log);

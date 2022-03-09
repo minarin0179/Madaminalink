@@ -27,7 +27,7 @@ module.exports = {
 
         if (target_ch.type === 'GUILD_TEXT') {
             await delete_all_messages(target_ch, quick_mode);
-            await interaction.followUp({ content: `テキストチャンネル「${target_ch.name}」のメッセージを削除しました`, ephemeral: true });
+            await interaction.followUp({ content: `テキストチャンネル「${target_ch.name}」のメッセージを削除しました`, ephemeral: true }).catch();
         }
         else if (target_ch.type === 'GUILD_CATEGORY') {
 
