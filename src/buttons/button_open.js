@@ -8,6 +8,11 @@ module.exports = {
         const target_mentionable = await interaction.guild.roles.fetch(option) || await interaction.guild.members.fetch(option);
         const target_channel = interaction.channel;
 
+        if (!interaction.member.permissions.has('ADMINISTRATOR')) {
+            await interaction.reply({ content: 'このコマンドを実行する権限がありません', ephemeral: true });
+            return;
+        }
+
         // チャンネルを閲覧可能にする
         await target_channel.permissionOverwrites.edit(target_mentionable, { VIEW_CHANNEL: true });
 

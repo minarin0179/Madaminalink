@@ -8,13 +8,10 @@ module.exports = {
         interaction.guild.roles.fetch(option).then(async (role) => {
             // ロールが存在しない場合
             if (role == null) {
-                interaction.reply({ 
-                    content: 
-                    `
-(※2022年1月21日より前に作成したボタンはアップデートにより使用できなくなりました
-再度/roleからボタンの作成をお願いします
-またもしよければ新機能/spectatorもお試しください)`,
-                     ephemeral: true });
+                interaction.reply({
+                    content: 'このロールはすでに削除されています',
+                    ephemeral: true,
+                });
                 return;
             }
             // ロールを付与
