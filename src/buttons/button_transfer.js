@@ -29,13 +29,12 @@ module.exports = {
 
         messages.delete(interaction.message.id);
 
-        await Promise.all(messages.map(async msg => {
+        for await (const msg of messages.values()) {
             const keys = msg.reactions.cache.keys();
-            if (Array.from(keys).some(key => reactions.has(key))) {
+            if (reactions.hasAny(...keys)) {
                 await this.send_message(target_ch, msg).catch(() => error = true);
-                return;
             }
-        }));
+        }
 
         if (error) {
             await interaction.followUp({ content: 'メッセージの転送に失敗しました', ephemeral: true });
