@@ -6,7 +6,6 @@ const dotenv = require('dotenv');
 // 環境変数を読み込み
 dotenv.config();
 
-// クライアントを作成
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS] });
 
 // その他の処理を取得
@@ -30,7 +29,7 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.isButton()) {
         buttons.pressed(interaction).catch(console.log);
     }
-    else if (interaction.isCommand()) {
+    else if (interaction.isCommand() || interaction.isContextMenu()) {
         commands.entered(interaction).catch(console.log);
     }
     else if (interaction.isSelectMenu()) {

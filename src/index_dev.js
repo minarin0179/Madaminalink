@@ -25,10 +25,11 @@ client.once('ready', async () => {
 });
 
 client.on('interactionCreate', async (interaction) => {
+
     if (interaction.isButton()) {
         buttons.pressed(interaction).catch(console.log);
     }
-    else if (interaction.isCommand()) {
+    else if (interaction.isCommand() || interaction.isContextMenu()) {
         commands.entered(interaction).catch(console.log);
     }
     else if (interaction.isSelectMenu()) {
