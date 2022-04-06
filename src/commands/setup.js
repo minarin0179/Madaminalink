@@ -151,7 +151,7 @@ module.exports = {
 
         // 個別チャンネル
         for (let i = 0; i < num_players; i++) {
-            const individual_ch = await guild.channels.create(`個別ch${i + 1}`, {
+            const individual_ch = await guild.channels.create(`pc${i + 1}`, {
                 type: 'GUILD_TEXT',
                 parent: new_category,
                 permissionOverwrites: [{
@@ -174,7 +174,7 @@ module.exports = {
 
             const role_i = await guild.roles.create(
                 {
-                    name: title + '_PL' + (i + 1),
+                    name: title + '_PC' + (i + 1),
                     position: role_pos,
                 },
             );
