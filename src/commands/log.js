@@ -42,15 +42,11 @@ module.exports = {
             });
         }
 
-
         await Promise.all(category.children.map(async channel => {
             if (channel.type === 'GUILD_TEXT') {
                 await channel.lockPermissions();
 
-                await channel.messages.fetch(channel.lastMessageId)
-                    .then(msg => {
-                        last_timestamp = Math.max(last_timestamp, msg.createdTimestamp);
-                    }).catch();
+                last_timestamp = Math.max(last_timestamp, channel.lastMessage?.createdTimestamp);
             }
             else {
                 await channel.delete();

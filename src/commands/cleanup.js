@@ -1,3 +1,5 @@
+
+
 module.exports = {
     data: {
         name: 'cleanup',
@@ -27,15 +29,19 @@ module.exports = {
 
         if (target_ch.type === 'GUILD_TEXT') {
             await delete_all_messages(target_ch, quick_mode);
-            await interaction.followUp({ content: `テキストチャンネル「${target_ch.name}」のメッセージを削除しました`, ephemeral: true }).catch();
+            await interaction.followUp({ content: `テキストチャンネル「${target_ch.name}」のメッセージを削除しました`, ephemeral: true }).catch(() => {
+                // 高速モードでコマンド実行チャンネルが消えていると失敗する
+            });
         }
         else if (target_ch.type === 'GUILD_CATEGORY') {
 
             Promise.all(target_ch.children.map(async channel => {
-                await delete_all_messages(channel);
+                await delete_all_messages(channel, quick_mode);
             }));
 
-            await interaction.followUp({ content: `カテゴリ「${target_ch.name}」内のすべてのチャンネルのメッセージを削除しました`, ephemeral: true });
+            await interaction.followUp({ content: `カテゴリ「${target_ch.name}」内のすべてのチャンネルのメッセージを削除しました`, ephemeral: true }).catch(() => {
+                // 高速モードでコマンド実行チャンネルが消えていると失敗する
+            });
         }
     },
 };
@@ -56,7 +62,7 @@ async function delete_all_messages(channel, quick_mode) {
     while (true) {
         const messages = await channel.messages.fetch({ limit: 100 });
 
-        Promise.all(messages.map(async message => {
+        await Promise.all(messages.map(async message => {
             await message.delete();
         }));
 
