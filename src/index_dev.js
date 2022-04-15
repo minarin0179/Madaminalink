@@ -30,7 +30,7 @@ client.on('interactionCreate', async (interaction) => {
         buttons.pressed(interaction).catch(console.log);
     }
     else if (interaction.isCommand() || interaction.isContextMenu()) {
-        commands.entered(interaction).catch(console.log);
+        commands.entered(interaction, client).catch(console.log);
     }
     else if (interaction.isSelectMenu()) {
         selects.selected(interaction).catch(console.log);

@@ -3,12 +3,10 @@ module.exports = {
         const guilds = await client.guilds.fetch();
         const owner = await client.users.fetch(new_guild.ownerId);
 
-        // 新たに参加したサーバーのオーナーが所持するサーバーを取得
-        Promise.all(guilds.map(async guild => (await guild.fetch()).ownerId == new_guild.ownerId))
-            .then(bits => guilds.filter(() => bits.shift()))
-            .then(owner_guilds => {
-                if (owner_guilds.size >= 1) {
-                    owner.send(`
+        const owner_guilds = await Promise.all(guilds.map(async guild => (await guild.fetch()).ownerId == new_guild.ownerId))
+            .then(bits => guilds.filter(() => bits.shift()));
+        if (owner_guilds.size <= 1) {
+            owner.send(`
 この度はマダミナリンクをご利用いただきありがとうございます。
 利用方法については以下のnoteを参照する または /helpをご利用下さい。
 note : https://note.com/minarin0179/n/n3f86accd8fea
@@ -16,13 +14,12 @@ note : https://note.com/minarin0179/n/n3f86accd8fea
 もしよろしければこちらにもご参加下さい。
 招待URL : https://discord.gg/6by68EJ3e7
                 `).catch(console.log);
-                }
-                else {
-                    owner.send(`
+        }
+        else {
+            owner.send(`
 あなたは現在${owner_guilds.size}個のサーバーにてマダミナリンクをご利用中です。
 ${owner_guilds.map(guild => `「${guild.name}」`)}
                 `).catch(console.log);
-                }
-            });
+        }
     },
 };

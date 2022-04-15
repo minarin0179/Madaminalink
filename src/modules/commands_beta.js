@@ -20,12 +20,14 @@ module.exports = {
         // スラッシュコマンドをサーバーに登録
         const datas = Object.keys(commands).map(key => commands[key].data);
         await client.application.commands.set(datas);
+        // みなりんのマダミス鯖
+        await client.application.commands.set(datas, '884395711637094430');
         // 製作委員会
-        await client.application.commands.set(datas, '929332317518983178');
+        await client.application.commands.set(datas, '926052259069059102');
         // 検証用
         await client.application.commands.set(datas, '946046708587036702');
     },
-    async entered(interaction) {
+    async entered(interaction, client) {
         // コマンドを取得
         const command = commands[interaction.commandName];
 
@@ -42,7 +44,7 @@ module.exports = {
 
         // コマンドを実行
         try {
-            await command.execute(interaction);
+            await command.execute(interaction, client);
         }
         catch (error) {
             console.log(error);
