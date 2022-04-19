@@ -20,25 +20,7 @@ module.exports = {
 
         const original_ch = interaction.options.getChannel('対象') || interaction.channel;
 
-        if (original_ch.type === 'GUILD_TEXT') {
-
-            const options = {};
-
-            // カテゴリ内のチャンネル数の上限は50
-            if (original_ch.parent && original_ch.parent.children.size == 50) {
-                options.parent = null;
-            }
-
-            await copy_ch(original_ch, options);
-        }
-        else if (original_ch.type == 'GUILD_CATEGORY') {
-            const new_category = await original_ch.clone({ name: `(copy) ${original_ch.name}` });
-            const childrens = discordSort(original_ch.children);
-
-            await Promise.all(childrens.map(async children => {
-                await copy_ch(children, { parent: new_category });
-            }));
-        }
+        await copy_ch(original_ch);
 
         await interaction.followUp(`${original_ch.name}のコピーが完了しました`);
     },
@@ -46,10 +28,30 @@ module.exports = {
 
 async function copy_ch(original_ch, options) {
 
-    const new_ch = await original_ch.clone(options);
+    if (options?.parent == undefined && original_ch.parent?.children.size >= 50) {
+        options.parent = null;
+    }
 
-    // これ以降はメッセージのコピーに関する処理
-    if (!original_ch.isText()) return;
+    if (original_ch.isText()) {
+        // カテゴリ内のチャンネル数の上限は50
+        const new_ch = await original_ch.clone(options);
+
+        await transfer_msgs(original_ch, new_ch);
+    }
+    else if (original_ch.type == 'GUILD_CATEGORY') {
+        const new_category = await original_ch.clone({ name: `(copy) ${original_ch.name}` });
+        const children = discordSort(original_ch.children);
+
+        await Promise.all(children.map(async child => {
+            await copy_ch(child, { parent: new_category });
+        }));
+    }
+    else if (original_ch.isVoice()) {
+        await original_ch.clone(options);
+    }
+}
+
+async function transfer_msgs(original_ch, new_ch) {
 
     // これがないとリアクションのキャッシュが残る
     original_ch.messages.cache.clear();
@@ -57,6 +59,9 @@ async function copy_ch(original_ch, options) {
     const messages = (await original_ch.messages.fetch({ limit: 100 })).reverse();
 
     for await (const original_msg of messages.values()) {
+
+        if (original_msg.system && original_msg.type != 'THREAD_CREATED') break;
+
         // botが送れるファイルのサイズは8MBまで
         const [files, big_files] = original_msg.attachments
             .partition(attachment => attachment.size < 8388608);
@@ -83,7 +88,7 @@ async function copy_ch(original_ch, options) {
             msg_temp.content = original_msg.content;
         }
 
-        const new_msg = await new_ch.send(msg_temp).catch(console.log);
+        const new_msg = await new_ch.send(msg_temp).catch(() => { console.log(original_msg) });
 
         for await (const file of big_files) {
             await new_ch.send(`\`\`\`diff
@@ -95,6 +100,24 @@ async function copy_ch(original_ch, options) {
 
         for await (const reaction of reactions) {
             new_msg.react(reaction);
+        }
+
+        if (original_msg.hasThread) {
+            const original_thread = original_msg.thread;
+            const StartThreadOptions = {
+                name: original_thread.name,
+                autoArchiveDuration: original_thread.autoArchiveDuration
+            }
+
+            let new_thread;
+            if (original_msg.type == 'THREAD_CREATED') {
+                new_thread = await new_ch.threads.create(StartThreadOptions);
+                await new_msg.delete();
+            } else {
+                new_thread = await new_msg.startThread(StartThreadOptions);
+            }
+
+            await transfer_msgs(original_thread, new_thread);
         }
     }
 }
