@@ -2,11 +2,11 @@ const { Util: { discordSort }, Collection } = require('discord.js');
 
 module.exports = {
     data: {
-        name: 'new_log',
-        description: '※この機能は/archiveへと改名されました 近日中にこちらのコマンド名では利用できなくなります',
+        name: 'archive',
+        description: 'チャンネルをスレッド化して保存します',
         options: [{
             type: 'CHANNEL',
-            name: 'ログにするカテゴリ',
+            name: '保存するカテゴリ',
             channelTypes: ['GUILD_CATEGORY'],
             description: '保存するカテゴリ',
             required: true,
@@ -24,7 +24,7 @@ module.exports = {
 
         await interaction.deferReply({ ephemeral: true });
 
-        const category = interaction.options.getChannel('ログにするカテゴリ');
+        const category = interaction.options.getChannel('保存するカテゴリ');
 
         const log_ch = interaction.options.getChannel('保存先のテキストチャンネル') || await category.guild.channels.create(`(ログ) ${category.name}`, {
             type: 'GUILD_TEXT',
