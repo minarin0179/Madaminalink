@@ -1,4 +1,4 @@
-const Discord = require('discord.js');
+const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
 
 module.exports = {
     data: {
@@ -21,25 +21,28 @@ module.exports = {
         // 送り先のチャンネルを取得
         const destination = interaction.options.getChannel('channel');
 
+        await interaction.channel.send(this.make_transfer_msg(destination));
+
+        // インタラクションを削除
+        await interaction.deleteReply();
+    },
+    make_transfer_msg(destination) {
+
         // 埋め込みを作成
-        const Embed = new Discord.MessageEmbed()
+        const Embed = new MessageEmbed()
             .setColor('#0099ff')
             .setTitle('転送するメッセージと同じリアクションを付けてください')
             .addField('転送先', destination.toString());
 
         // ボタンを作成
-        const button = new Discord.MessageButton()
+        const button = new MessageButton()
             .setCustomId(`transfer;${destination.id}`)
             .setStyle('PRIMARY')
             .setLabel(`「#${destination.name}」へ転送`);
 
-        // remindを送信
-        await interaction.channel.send({
+        return {
             embeds: [Embed],
-            components: [new Discord.MessageActionRow().addComponents(button)],
-        });
-
-        // インタラクションを削除
-        await interaction.deleteReply();
+            components: [new MessageActionRow().addComponents(button)],
+        };
     },
 };

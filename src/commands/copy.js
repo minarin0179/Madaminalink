@@ -1,4 +1,6 @@
 const { Util: { splitMessage, discordSort } } = require('discord.js');
+const { make_transfer_msg } = require('../commands/transfer.js')
+const before_after = {}
 
 module.exports = {
     data: {
@@ -35,6 +37,7 @@ async function copy_ch(original_ch, options) {
     if (original_ch.isText()) {
         // カテゴリ内のチャンネル数の上限は50
         const new_ch = await original_ch.clone(options);
+        before_after[original_ch.id] = new_ch;
 
         await transfer_msgs(original_ch, new_ch);
     }
@@ -60,18 +63,30 @@ async function transfer_msgs(original_ch, new_ch) {
 
     for await (const original_msg of messages.values()) {
 
-        if (original_msg.system && original_msg.type != 'THREAD_CREATED') break;
+        if (original_msg.system && original_msg.type != 'THREAD_CREATED') continue;
 
         // botが送れるファイルのサイズは8MBまで
         const [files, big_files] = original_msg.attachments
             .partition(attachment => attachment.size < 8388608);
 
-        const msg_temp = {
+        let msg_temp = {
             files: files.map(attachment => attachment.url),
             components: original_msg.components,
             embeds: original_msg.embeds,
             allowedMentions: { parse: [] },
         };
+
+        msg_temp.components.map(action_row => {
+            action_row.components.map(action_row_component => {
+                const customId = action_row_component.customId;
+                if (customId.startsWith('transfer;')) {
+                    const target_ch_id = customId.substr(customId.indexOf(';') + 1);
+                    if (before_after.hasOwnProperty(target_ch_id)) {
+                        msg_temp = make_transfer_msg(before_after[target_ch_id]);
+                    }
+                }
+            });
+        });
 
         await new_ch.sendTyping();
 
@@ -89,6 +104,10 @@ async function transfer_msgs(original_ch, new_ch) {
         }
 
         const new_msg = await new_ch.send(msg_temp).catch(() => { console.log(original_msg) });
+
+        if(original_msg.pinned){
+            await new_msg.pin();
+        }
 
         for await (const file of big_files) {
             await new_ch.send(`\`\`\`diff
