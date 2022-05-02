@@ -1,5 +1,4 @@
 const crypto = require('crypto-js');
-
 const Discord = require('discord.js');
 const { connection, key } = require('../modules/sql.js');
 
@@ -27,12 +26,19 @@ module.exports = {
     need_admin: true,
     async execute(interaction) {
 
-        // 応答時間の制限を15分に
-        await interaction.deferReply({ ephemeral: true });
-
         // 各種データを取得
         const time = interaction.options.getString('time');
         const message = interaction.options.getString('message');
+        const destination = interaction.options.getChannel('channel') || interaction.channel;
+
+        this.set(interaction, time, message, destination);
+
+    },
+    async set(interaction, time, message, destination) {
+
+        // 応答時間の制限を15分に
+        await interaction.deferReply({ ephemeral: true });
+
         const msg_encrypted = crypto.AES.encrypt(message, key).toString();
         const guild = interaction.guild;
         const author = interaction.user;
@@ -56,7 +62,6 @@ module.exports = {
 
 
         // 送り先のチャンネルを取得
-        const destination = interaction.options.getChannel('channel') || interaction.channel;
 
 
         const date_formated = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;

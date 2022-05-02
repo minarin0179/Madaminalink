@@ -5,7 +5,7 @@ const { connection, key } = require('../modules/sql.js');
 
 module.exports = {
     data: {
-        name: 'new_remind',
+        name: 'remind_talk',
         description: '指定日時にメッセージを送信します',
         options: [{
             type: 'CHANNEL',

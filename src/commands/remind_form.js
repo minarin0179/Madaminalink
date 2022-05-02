@@ -2,13 +2,13 @@ const { Modal, TextInputComponent, showModal } = require('discord-modals');
 
 module.exports = {
     data: {
-        name: 'modal',
-        description: 'マダミナリンクが動いてるか確認する用',
+        name: 'remind_form',
+        description: '指定日時にメッセージを送信します',
     },
     need_admin: false,
-    async execute(interaction, client) {
+    async execute(interaction) {
         const modal = new Modal()
-            .setCustomId('regist_remind')
+            .setCustomId('remind_set')
             .setTitle('リマインダーを登録')
             .addComponents(
                 new TextInputComponent()
@@ -18,7 +18,7 @@ module.exports = {
                     .setPlaceholder('yyyy/mm/dd hh:mm')
                     .setRequired(true),
                 new TextInputComponent()
-                    .setCustomId('main')
+                    .setCustomId('content')
                     .setLabel('本文')
                     .setStyle('LONG')
                     .setPlaceholder('メッセージを入力')
@@ -26,7 +26,7 @@ module.exports = {
             );
 
         showModal(modal, {
-            client: client,
+            client: interaction.client,
             interaction: interaction,
         });
 
