@@ -3,7 +3,7 @@ module.exports = {
         name: 'ニックネームをリセット',
         type: 'USER',
     },
-    need_admin: false,
+    need_admin: true,
 
     async execute(interaction) {
         const target_member = interaction.targetMember;
