@@ -11,9 +11,6 @@ modalFiles.forEach(file => {
 
 module.exports = {
     async submit(interaction) {
-
-        console.log(interaction);
-
         const id = interaction.customId;
         const modal = modals[(id.indexOf(';') == -1) ? id : id.substring(0, id.indexOf(';'))];
 
