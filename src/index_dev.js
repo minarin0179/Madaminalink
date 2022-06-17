@@ -1,14 +1,12 @@
 // モジュール読み込み\
 const { Client, Intents } = require('discord.js');
 const dotenv = require('dotenv');
-const discordModals = require('discord-modals');
 
 // 環境変数を読み込み
 dotenv.config();
 
 // クライアントを作成
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS] });
-discordModals(client);
 
 // その他の処理を取得
 const welcome = require('./modules/welcome.js');
@@ -38,12 +36,9 @@ client.on('interactionCreate', async (interaction) => {
     else if (interaction.isSelectMenu()) {
         selects.selected(interaction).catch(console.log);
     }
-});
-
-
-client.on('modalSubmit', async (interaction) => {
-    console.log(interaction);
-    modals.submit(interaction);
+    else if (interaction.isModalSubmit()) {
+        modals.submit(interaction).catch(console.log);
+    }
 });
 
 client.login(process.env.DISCORD_TOKEN_DEV);

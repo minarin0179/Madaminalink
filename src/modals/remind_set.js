@@ -5,8 +5,8 @@ module.exports = {
 
     async execute(interaction) {
         // 各種データを取得
-        const time = interaction.getTextInputValue('date');
-        const message = interaction.getTextInputValue('content');
+        const time = interaction.fields.getTextInputValue('date');
+        const message = interaction.fields.getTextInputValue('content');
         const destination = interaction.channel;
 
         set(interaction, time, message, destination);

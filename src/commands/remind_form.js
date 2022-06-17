@@ -1,4 +1,4 @@
-const { Modal, TextInputComponent, showModal } = require('discord-modals');
+const { MessageActionRow, Modal, TextInputComponent } = require('discord.js');
 
 module.exports = {
     data: {
@@ -10,26 +10,26 @@ module.exports = {
         const modal = new Modal()
             .setCustomId('remind_set')
             .setTitle('リマインダーを登録')
-            .addComponents(
-                new TextInputComponent()
-                    .setCustomId('date')
-                    .setLabel('日時')
-                    .setStyle('SHORT')
-                    .setPlaceholder('yyyy/mm/dd hh:mm')
-                    .setRequired(true),
-                new TextInputComponent()
-                    .setCustomId('content')
-                    .setLabel('本文')
-                    .setStyle('LONG')
-                    .setPlaceholder('メッセージを入力')
-                    .setRequired(true),
+            .setComponents(
+                new MessageActionRow().setComponents(
+                    new TextInputComponent()
+                        .setCustomId('date')
+                        .setLabel('日時')
+                        .setStyle('SHORT')
+                        .setPlaceholder('yyyy/mm/dd hh:mm')
+                        .setRequired(true),
+                ),
+
+                new MessageActionRow().setComponents(
+                    new TextInputComponent()
+                        .setCustomId('content')
+                        .setLabel('本文')
+                        .setStyle('PARAGRAPH')
+                        .setPlaceholder('メッセージを入力')
+                        .setRequired(true),
+                ),
             );
 
-        showModal(modal, {
-            client: interaction.client,
-            interaction: interaction,
-        });
-
-
+        await interaction.showModal(modal);
     },
 };

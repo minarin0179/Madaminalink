@@ -2,14 +2,12 @@
 const { Client, Intents } = require('discord.js');
 const cron = require('node-cron');
 const dotenv = require('dotenv');
-const discordModals = require('discord-modals');
 
 
 // 環境変数を読み込み
 dotenv.config();
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS] });
-discordModals(client);
 
 // その他の処理を取得
 const remind = require('./modules/send_remind.js');
@@ -39,13 +37,10 @@ client.on('interactionCreate', async (interaction) => {
     else if (interaction.isSelectMenu()) {
         selects.selected(interaction).catch(console.log);
     }
+    else if (interaction.isModalSubmit()) {
+        modals.submit(interaction).catch(console.log);
+    }
 });
-
-client.on('modalSubmit', async (interaction) => {
-    console.log(interaction);
-    modals.submit(interaction);
-});
-
 
 cron.schedule('5 * * * * *', () => {
     remind.execute(client).catch(console.log);
