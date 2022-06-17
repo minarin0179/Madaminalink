@@ -1,7 +1,7 @@
 module.exports = {
     data: {
         name: 'log',
-        description: 'カテゴリをログとして保存します',
+        description: 'カテゴリを閲覧不可能にします',
         options: [{
             type: 'CHANNEL',
             name: 'ログにするカテゴリ',
