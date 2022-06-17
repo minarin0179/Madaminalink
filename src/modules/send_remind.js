@@ -21,7 +21,7 @@ module.exports = {
 
                 // remindメッセージの削除
                 client.channels.fetch(res.channel_id).then(remind_ch => {
-                    remind_ch.messages.fetch(res.message_id).then(msg => msg.delete()).catch(console.log);
+                    remind_ch?.messages.fetch(res.message_id).then(msg => msg.delete()).catch(console.log);
                 }).catch();
 
                 connection.query(`DELETE FROM reminds WHERE id = ${res.id}`);
