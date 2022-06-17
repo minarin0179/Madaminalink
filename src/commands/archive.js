@@ -3,7 +3,7 @@ const { Util: { discordSort }, Collection } = require('discord.js');
 module.exports = {
     data: {
         name: 'archive',
-        description: 'チャンネルをスレッド化して保存します',
+        description: 'チャンネルをスレッドとして保存します',
         options: [{
             type: 'CHANNEL',
             name: '保存するカテゴリ',
@@ -55,7 +55,6 @@ module.exports = {
                 const time_formated = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${('0' + date.getHours()).slice(-2)}:${('0' + date.getMinutes()).slice(-2)}`;
 
                 await thread.sendTyping();
-
                 const embeds = msgs.filter(msg => msg.content != '').map(message => {
                     return {
                         author: {
@@ -72,13 +71,14 @@ module.exports = {
                 if (embeds.length > 0) {
                     await thread.send({ embeds: embeds });
                 }
-                const files = msgs.slice(-1)[0].attachments.map(attachment => attachment.url);
+
+                // botが送れるファイルのサイズは8MBまで
+                const files = msgs.slice(-1)[0].attachments.filter(attachment => attachment.size < 8388608).map(attachment => attachment.url);
                 if (files.length > 0) {
                     await thread.send({ files: files });
                 }
             }
             await thread.setArchived(true);
-
         }));
 
         const sys_msgs = log_ch.messages.cache.filter(msg => msg.type == 'THREAD_CREATED');
