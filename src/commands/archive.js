@@ -33,20 +33,20 @@ module.exports = {
 
         let description = '';
 
-        const childrens = discordSort(category.children.filter(ch => ch.isText()));
+        const children = discordSort(category.children.filter(ch => ch.isText()));
 
-        await Promise.all(childrens.map(async children => {
+        await Promise.all(children.map(async child => {
 
             const thread = await log_ch.threads.create({
-                name: children.name,
+                name: child.name,
                 autoArchiveDuration: 60,
             });
 
-            description += `[# ${children.name}](https://discord.com/channels/${interaction.guild.id}/${thread.id})\n`;
+            description += `[# ${child.name}](https://discord.com/channels/${interaction.guild.id}/${thread.id})\n`;
 
             await log_ch.sendTyping();
 
-            const messages = [...(await fetch_all_messages(children)).reverse().values()];
+            const messages = [...(await fetch_all_messages(child)).reverse().values()];
 
             const msgs_sliced = slice_msgs(messages);
 

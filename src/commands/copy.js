@@ -92,9 +92,9 @@ async function transfer_msgs(original_ch, new_ch) {
 
         // botは2000文字までしか送れないため超えたら分割
         if (original_msg.content.length > 2000) {
-            const msgs_splited = splitMessage(original_msg.content);
-            msg_temp.content = msgs_splited.pop();
-            for await (const str of msgs_splited) {
+            const msgs_split = splitMessage(original_msg.content);
+            msg_temp.content = msgs_split.pop();
+            for await (const str of msgs_split) {
                 await new_ch.send(str);
             }
         }
@@ -105,7 +105,7 @@ async function transfer_msgs(original_ch, new_ch) {
 
         const new_msg = await new_ch.send(msg_temp).catch(() => { console.log(original_msg) });
 
-        if(original_msg.pinned){
+        if (original_msg.pinned) {
             await new_msg.pin();
         }
 
