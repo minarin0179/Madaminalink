@@ -1,5 +1,4 @@
 const fs = require('fs');
-
 // コマンドを取得
 const commands = {};
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -47,7 +46,7 @@ module.exports = {
             await command.execute(interaction, client);
         }
         catch (error) {
-            console.log(error);
+            // console.log(error);
             if (error.code == 50001) {
                 return_err_msg(interaction, 'マダミナリンクにはこのカテゴリまたはチャンネルの閲覧権限がありません');
             }
@@ -56,6 +55,14 @@ module.exports = {
             }
             else {
                 return_err_msg(interaction, '予期せぬエラーが発生しました。管理者に報告してください。');
+                await interaction.followUp({
+                    content: 'エラーを報告する際は以下のエラーメッセージ添えて送って下さい',
+                    embeds: [{
+                        color: 'RED',
+                        description: error.stack,
+                    }],
+                    ephemeral: true,
+                });
             }
         }
     },

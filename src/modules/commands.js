@@ -38,6 +38,15 @@ module.exports = {
             interaction.replied || interaction.deferred
                 ? await interaction.followUp({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true })
                 : await interaction.reply({ content: '予期せぬエラーが発生しました。処理を中断します', ephemeral: true });
+
+            await interaction.followUp({
+                content: 'エラーを報告する際は以下のエラーメッセージも送っていただけると助かります',
+                embeds: [{
+                    color: 'RED',
+                    description: error.stack,
+                }],
+                ephemeral: true,
+            });
         }
     },
 };

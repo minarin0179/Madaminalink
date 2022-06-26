@@ -12,10 +12,18 @@ module.exports = {
                 const message = bytes.toString(crypto.enc.Utf8);
                 // remindの送信
                 client.channels.fetch(res.destination_id).then(destination_ch => {
-                    destination_ch.send(message);
-                }).catch(async () => {
+                    destination_ch?.send(message);
+                }).catch(async (error) => {
                     client.users.fetch(res.author_id).then(author => {
                         author.send(`リマインドが正しく送信されませんでした。チャンネルが削除されていた可能性があります。\n送信されなかったメッセージ「${message}」`);
+                        author.send({
+                            content: 'エラーを報告する際は以下のエラーメッセージ添えて送って下さい',
+                            embeds: [{
+                                color: 'RED',
+                                description: error.stack,
+                            }],
+                            ephemeral: true,
+                        });
                     }).catch();
                 });
 
