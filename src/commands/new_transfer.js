@@ -14,27 +14,27 @@ module.exports = {
 
         await interaction.reply({
             content: '転送先を指定してください',
-            components: buildComponents(channels, `new_transfer;${interaction.targetMessage.id}`),
+            components: this.buildComponents(channels, `new_transfer;${interaction.targetMessage.id}`),
             ephemeral: true,
         });
     },
-};
 
-function buildComponents(channels, customId) {
-    return [
-        new MessageActionRow().addComponents(
-            new MessageSelectMenu()
-                .setCustomId(customId)
-                .setMinValues(0)
-                .setMaxValues(channels.length)
-                .addOptions(
-                    channels.map(([channel, selected]) => ({
-                        label: channel.name,
-                        value: channel.id,
-                        default: selected,
-                    }),
+    buildComponents(channels, customId) {
+        return [
+            new MessageActionRow().addComponents(
+                new MessageSelectMenu()
+                    .setCustomId(customId)
+                    .setMinValues(0)
+                    .setMaxValues(channels.length)
+                    .addOptions(
+                        channels.map(([channel, selected]) => ({
+                            label: channel.name,
+                            value: channel.id,
+                            default: selected,
+                        }),
+                        ),
                     ),
-                ),
-        ),
-    ];
-}
+            ),
+        ];
+    }
+};
