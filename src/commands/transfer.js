@@ -1,5 +1,5 @@
-const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
-
+const { MessageActionRow, MessageButton, MessageEmbed, Util: { discordSort } } = require('discord.js');
+const { buildComponents } = require('./new_transfer.js');
 module.exports = {
     data: {
         name: 'transfer',
@@ -9,7 +9,7 @@ module.exports = {
             channelTypes: ['GUILD_TEXT'],
             name: 'channel',
             description: 'どこに転送しますか?',
-            required: true,
+            required: false,
         }],
     },
     need_admin: true,
@@ -21,10 +21,23 @@ module.exports = {
         // 送り先のチャンネルを取得
         const destination = interaction.options.getChannel('channel');
 
-        await interaction.channel.send(this.make_transfer_msg(destination));
+        if (destination != null) {
+            await interaction.channel.send(this.make_transfer_msg(destination));
+            await interaction.deleteReply();
+            return;
+        }
 
-        // インタラクションを削除
+        const category = interaction.channel.parent?.children || interaction.guild.channels.cache.filter(ch => !ch.parent);
+        const channels = [...discordSort(category).filter(child => child.isText()).values()].map(e => [e, false]);
+
+        await interaction.followUp({
+            content: '転送先を選択してください',
+            components: buildComponents(channels, `transfers`),
+            ephemeral: true,
+        });
         await interaction.deleteReply();
+        return;
+
     },
     make_transfer_msg(destination) {
 

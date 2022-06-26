@@ -76,17 +76,14 @@ async function transfer_msgs(original_ch, new_ch) {
             allowedMentions: { parse: [] },
         };
 
-        msg_temp.components.map(action_row => {
-            action_row.components.map(action_row_component => {
-                const customId = action_row_component.customId;
-                if (customId.startsWith('transfer;')) {
-                    const target_ch_id = customId.substr(customId.indexOf(';') + 1);
-                    if (before_after.hasOwnProperty(target_ch_id)) {
-                        msg_temp = make_transfer_msg(before_after[target_ch_id]);
-                    }
-                }
-            });
-        });
+        //transferの更新
+        customId = original_msg.components[0]?.components[0]?.customId;
+        if (customId?.startsWith('transfer;')) {
+            const target_ch_id = customId.substr(customId.indexOf(';') + 1);
+            if (before_after.hasOwnProperty(target_ch_id)) {
+                msg_temp = make_transfer_msg(before_after[target_ch_id]);
+            }
+        }
 
         await new_ch.sendTyping();
 
@@ -103,7 +100,7 @@ async function transfer_msgs(original_ch, new_ch) {
             msg_temp.content = original_msg.content;
         }
 
-        const new_msg = await new_ch.send(msg_temp).catch(() => { console.log(original_msg) });
+        const new_msg = await new_ch.send(msg_temp);
 
         if (original_msg.pinned) {
             await new_msg.pin();
@@ -115,12 +112,14 @@ async function transfer_msgs(original_ch, new_ch) {
 - ファイルサイズの上限は8MBまでです\`\`\``);
         }
 
+        //リアクションの転送
         const reactions = original_msg.reactions.cache.keys();
 
         for await (const reaction of reactions) {
             new_msg.react(reaction);
         }
 
+        //スレッドの転送
         if (original_msg.hasThread) {
             const original_thread = original_msg.thread;
             const StartThreadOptions = {
