@@ -1,4 +1,4 @@
-
+const { Collection } = require('discord.js')
 
 module.exports = {
     data: {
@@ -46,28 +46,46 @@ module.exports = {
     },
 };
 
-async function delete_all_messages(channel, quick_mode) {
 
-    if (quick_mode) {
-        await channel.clone();
-        await channel.delete();
-        return;
+const delete_all_messages = async (channel, isQuickMode) => {
+    if (isQuickMode && "clone" in channel) {
+        await channel.clone()
+        await channel.delete()
+        return
     }
 
-    // 2週間いないのメッセージはbulkDelete()で100個ずつまとめて削除できる
-    while ((await channel.bulkDelete(100, true)).size > 0);
+    const allMessages = await fetchAllMessages(channel)
 
-    // 2週間以上前のメッセージは一つずつ取り出して削除する
-    // API制限のため遅い
-    while (true) {
-        const messages = await channel.messages.fetch({ limit: 100 });
+    const [messages, oldMessages] = allMessages.partition(message => (Date.now() - message.createdTimestamp) < 1_209_600_000);
 
-        await Promise.all(messages.map(async message => {
-            await message.delete();
-        }));
+    await Promise.all(arraySplit(Array.from(messages.values()), 100).map(async messagesSliced => {
+        await channel.bulkDelete(messagesSliced)
+    }))
 
-        if (messages.size != 100) {
-            break;
-        }
-    }
+    //２週間以上前のメッセージを順番に削除(遅い)
+    await Promise.all(oldMessages.map(async message => {
+        await message.delete();
+    }));
 }
+
+
+const fetchAllMessages = async (channel) => {
+
+    let messages = new Collection()
+    let lastID
+
+    while (true) {
+        const fetchedMessages = await channel.messages.fetch({
+            limit: 100,
+            ...(lastID && { before: lastID })
+        })
+
+        messages = messages.concat(fetchedMessages)
+        lastID = fetchedMessages.lastKey()
+
+        if (fetchedMessages.size < 100) return messages
+    }
+
+}
+const arraySplit = (array, n) =>
+    array.reduce((acc, c, i) => (i % n ? acc : [...acc, ...[array.slice(i, i + n)]]), [])
